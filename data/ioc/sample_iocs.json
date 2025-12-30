@@ -1,0 +1,58 @@
+{
+  "description": "Sample IOC database for Linux Security Monitor",
+  "version": "1.0.0",
+  "updated_at": "2024-01-01T00:00:00Z",
+  "iocs": [
+    {
+      "type": "process",
+      "value": "mimikatz",
+      "description": "Credential dumping tool commonly used for lateral movement",
+      "severity": "critical",
+      "source": "internal",
+      "tags": ["credential_access", "T1003"]
+    },
+    {
+      "type": "process",
+      "value": "meterpreter",
+      "description": "Metasploit post-exploitation payload",
+      "severity": "critical",
+      "source": "internal",
+      "tags": ["execution", "T1059"]
+    },
+    {
+      "type": "process",
+      "value": "cobaltstrike",
+      "description": "Commercial adversary simulation tool often abused",
+      "severity": "critical",
+      "source": "internal",
+      "tags": ["command_and_control", "T1071"]
+    },
+    {
+      "type": "path",
+      "value": "/tmp/.*\\.elf$",
+      "description": "ELF binary in temp directory",
+      "severity": "high",
+      "source": "internal",
+      "tags": ["execution"]
+    },
+    {
+      "type": "path",
+      "value": "/dev/shm/.*",
+      "description": "File in shared memory filesystem",
+      "severity": "medium",
+      "source": "internal",
+      "tags": ["defense_evasion"]
+    },
+    {
+      "type": "hash",
+      "value": "d41d8cd98f00b204e9800998ecf8427e",
+      "description": "Empty file MD5 - test indicator",
+      "severity": "low",
+      "source": "test",
+      "tags": ["test"]
+    }
+  ]
+}
+
+
+

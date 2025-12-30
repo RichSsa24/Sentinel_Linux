@@ -1,0 +1,58 @@
+[Unit]
+Description=Linux Security Monitor - Enterprise Security Monitoring
+Documentation=https://github.com/yourusername/linux-security-monitor
+After=network.target syslog.target auditd.service
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/linux-security-monitor
+
+# Main process
+ExecStart=/opt/linux-security-monitor/venv/bin/python -m src.cli.main run --config /etc/linux-security-monitor/config.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=linux-security-monitor
+
+# Environment
+Environment=PYTHONUNBUFFERED=1
+Environment=LSM_LOG_LEVEL=INFO
+
+# Security hardening
+NoNewPrivileges=no
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+# Read-write paths for logs and data
+ReadWritePaths=/var/log/linux-security-monitor
+ReadWritePaths=/var/lib/linux-security-monitor
+ReadWritePaths=/var/run
+
+# Allow reading system logs
+ReadOnlyPaths=/var/log
+
+# Capabilities needed for monitoring
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_NET_ADMIN CAP_SYS_PTRACE CAP_AUDIT_READ
+AmbientCapabilities=CAP_DAC_READ_SEARCH CAP_NET_ADMIN CAP_SYS_PTRACE CAP_AUDIT_READ
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,221 @@
+# Linux Security Monitor - Default Configuration
+# Copy this file to /etc/linux-security-monitor/config.yaml and customize
+
+# Global settings
+global:
+  # Hostname override (empty = auto-detect)
+  hostname: ""
+
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_level: INFO
+
+  # Log file path
+  log_file: /var/log/linux-security-monitor/monitor.log
+
+  # PID file for daemon mode
+  pid_file: /var/run/linux-security-monitor.pid
+
+  # Enable debug mode
+  debug: false
+
+# Monitor configuration
+monitors:
+  # User activity monitoring
+  user_monitor:
+    enabled: true
+    poll_interval: 60
+    auth_log_path: /var/log/auth.log
+    track_commands: false
+    alert_on_root_login: true
+    alert_on_sudo: true
+
+  # Process monitoring
+  process_monitor:
+    enabled: true
+    poll_interval: 30
+    baseline_path: /var/lib/linux-security-monitor/baselines/processes.json
+    alert_on_new_process: false
+    suspicious_paths:
+      - /tmp
+      - /dev/shm
+      - /var/tmp
+    suspicious_names:
+      - nc
+      - ncat
+      - netcat
+      - nmap
+      - tcpdump
+      - wireshark
+      - tshark
+
+  # Network connection monitoring
+  network_monitor:
+    enabled: true
+    poll_interval: 30
+    alert_on_new_listener: true
+    alert_on_outbound: false
+    whitelisted_ports:
+      - 22    # SSH
+      - 80    # HTTP
+      - 443   # HTTPS
+      - 53    # DNS
+    whitelisted_ips:
+      - 127.0.0.1
+      - "::1"
+
+  # File integrity monitoring
+  file_integrity_monitor:
+    enabled: true
+    poll_interval: 300
+    hash_algorithm: sha256
+    watched_paths:
+      - /etc/passwd
+      - /etc/shadow
+      - /etc/group
+      - /etc/gshadow
+      - /etc/sudoers
+      - /etc/ssh/sshd_config
+      - /etc/pam.d/
+      - /etc/security/
+      - /etc/crontab
+      - /etc/hosts
+      - /etc/resolv.conf
+    recursive_paths:
+      - /etc/sudoers.d
+      - /etc/cron.d
+      - /etc/cron.daily
+      - /etc/cron.hourly
+      - /etc/systemd/system
+    exclude_patterns:
+      - "*.swp"
+      - "*~"
+      - "*.bak"
+
+  # Authentication monitoring
+  auth_monitor:
+    enabled: true
+    poll_interval: 30
+    brute_force_threshold: 5
+    brute_force_window: 300
+    alert_on_failed_auth: true
+
+  # Service monitoring
+  service_monitor:
+    enabled: true
+    poll_interval: 60
+    critical_services:
+      - sshd
+      - firewalld
+      - iptables
+      - auditd
+      - rsyslog
+    alert_on_new_service: true
+
+  # Log file monitoring
+  log_monitor:
+    enabled: true
+    poll_interval: 10
+    log_paths:
+      - /var/log/syslog
+      - /var/log/messages
+      - /var/log/secure
+      - /var/log/auth.log
+    patterns:
+      - pattern: "Failed password"
+        severity: MEDIUM
+        description: "Failed authentication attempt"
+      - pattern: "BREAK-IN ATTEMPT"
+        severity: CRITICAL
+        description: "Potential break-in attempt detected"
+      - pattern: "Accepted publickey"
+        severity: INFO
+        description: "SSH public key authentication"
+      - pattern: "session opened for user root"
+        severity: HIGH
+        description: "Root session opened"
+      - pattern: "segfault"
+        severity: LOW
+        description: "Application segmentation fault"
+
+# Analyzer configuration
+analyzers:
+  # Threat analysis engine
+  threat_analyzer:
+    enabled: true
+    rules_path: /var/lib/linux-security-monitor/rules
+
+  # Anomaly detection
+  anomaly_detector:
+    enabled: true
+    baseline_path: /var/lib/linux-security-monitor/baselines
+    sensitivity: medium
+    learning_period: 86400
+
+  # IOC matching
+  ioc_matcher:
+    enabled: true
+    ioc_database: /var/lib/linux-security-monitor/ioc/iocs.json
+    update_interval: 3600
+
+  # MITRE ATT&CK mapping
+  mitre_mapper:
+    enabled: true
+    include_sub_techniques: true
+
+# Reporter configuration
+reporters:
+  # Console output
+  console:
+    enabled: true
+    color: true
+    severity_threshold: INFO
+
+  # JSON file output
+  json:
+    enabled: true
+    output_path: /var/log/linux-security-monitor/events.json
+    rotate: true
+    max_size_mb: 100
+    backup_count: 5
+
+  # Syslog forwarding
+  syslog:
+    enabled: false
+    host: localhost
+    port: 514
+    protocol: udp
+    facility: LOCAL0
+
+  # Webhook notifications
+  webhook:
+    enabled: false
+    url: ""
+    method: POST
+    headers:
+      Content-Type: application/json
+    template: |
+      {
+        "text": "Security Alert: ${alert.title}",
+        "severity": "${alert.severity}",
+        "host": "${alert.host}",
+        "timestamp": "${alert.timestamp}",
+        "details": "${alert.description}"
+      }
+    retry_count: 3
+    timeout: 10
+
+# Alerting configuration
+alerting:
+  # Minimum severity to generate alerts
+  severity_threshold: LOW
+
+  # Deduplication window in seconds
+  deduplication_window: 300
+
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    max_alerts_per_minute: 60
+
+
+

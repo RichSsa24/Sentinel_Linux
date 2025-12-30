@@ -1,0 +1,136 @@
+# Custom Sigma Detection Rules for Linux Security Monitor
+# Format: Sigma Rule Specification
+# Reference: https://github.com/SigmaHQ/sigma
+
+title: SSH Brute Force Attack
+id: lsm-001
+status: experimental
+description: Detects SSH brute force attacks based on multiple failed authentication attempts
+author: Security Team
+date: 2024/01/01
+logsource:
+    product: linux
+    service: auth
+detection:
+    selection:
+        EventType: auth_failure
+        service: ssh
+    condition: selection | count() by source_ip > 5
+    timeframe: 5m
+level: high
+tags:
+    - attack.credential_access
+    - attack.t1110
+falsepositives:
+    - Legitimate users with forgotten passwords
+    - Automated systems with misconfigured credentials
+
+---
+
+title: Suspicious Process from Temp Directory
+id: lsm-002
+status: experimental
+description: Detects process execution from temporary directories
+author: Security Team
+date: 2024/01/01
+logsource:
+    product: linux
+    category: process_creation
+detection:
+    selection:
+        exe|startswith:
+            - '/tmp/'
+            - '/var/tmp/'
+            - '/dev/shm/'
+    condition: selection
+level: high
+tags:
+    - attack.execution
+    - attack.t1059
+falsepositives:
+    - Legitimate installers
+    - Build processes
+
+---
+
+title: Root User Direct Login
+id: lsm-003
+status: experimental
+description: Detects direct login as root user
+author: Security Team
+date: 2024/01/01
+logsource:
+    product: linux
+    service: auth
+detection:
+    selection:
+        EventType: user_login
+        user: root
+    filter:
+        method: su
+    condition: selection and not filter
+level: medium
+tags:
+    - attack.initial_access
+    - attack.t1078
+falsepositives:
+    - Emergency maintenance
+    - Console access
+
+---
+
+title: Critical File Modification
+id: lsm-004
+status: experimental
+description: Detects modification of critical system files
+author: Security Team
+date: 2024/01/01
+logsource:
+    product: linux
+    category: file_event
+detection:
+    selection:
+        EventType:
+            - file_modified
+            - file_deleted
+        path|startswith:
+            - '/etc/passwd'
+            - '/etc/shadow'
+            - '/etc/sudoers'
+            - '/etc/ssh/'
+    condition: selection
+level: critical
+tags:
+    - attack.persistence
+    - attack.t1543
+falsepositives:
+    - System administration
+    - Package updates
+
+---
+
+title: New Systemd Service Created
+id: lsm-005
+status: experimental
+description: Detects creation of new systemd service units
+author: Security Team
+date: 2024/01/01
+logsource:
+    product: linux
+    category: file_event
+detection:
+    selection:
+        EventType: file_created
+        path|contains: '/etc/systemd/system/'
+        path|endswith: '.service'
+    condition: selection
+level: medium
+tags:
+    - attack.persistence
+    - attack.t1543.002
+falsepositives:
+    - Legitimate software installation
+    - System administration
+
+
+
