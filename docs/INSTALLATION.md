@@ -54,7 +54,7 @@ The install script will:
 #### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/linux-security-monitor.git
+git clone https://github.com/RichSsa24/linux-security-monitor.git
 cd linux-security-monitor
 ```
 
