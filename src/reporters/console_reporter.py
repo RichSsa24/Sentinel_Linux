@@ -7,7 +7,6 @@ Formats alerts for human-readable terminal display with color support.
 from __future__ import annotations
 
 import sys
-from datetime import datetime
 from typing import Any, Dict, Optional
 
 from src.config.logging_config import get_logger
@@ -71,10 +70,10 @@ class ConsoleReporter:
         )
         timestamp = alert.timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
-        lines.append(f"\n{'='*60}")
+        lines.append(f"\n{'=' * 60}")
         lines.append(f"{severity_str} {self._bold(alert.title)}")
         lines.append(f"Time: {timestamp} | Host: {alert.host}")
-        lines.append(f"{'='*60}")
+        lines.append(f"{'=' * 60}")
 
         # Description
         lines.append(f"\n{alert.description}")
@@ -113,6 +112,5 @@ class ConsoleReporter:
         if not self.use_color:
             return text
         return f"{self.BOLD}{text}{self.RESET}"
-
 
 

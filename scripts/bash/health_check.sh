@@ -22,11 +22,11 @@ source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 source "${SCRIPT_DIR}/lib/colors.sh" 2>/dev/null || true
 
 # Configuration
-INSTALL_DIR="${LSM_INSTALL_DIR:-/opt/linux-security-monitor}"
-CONFIG_DIR="${LSM_CONFIG_DIR:-/etc/linux-security-monitor}"
-LOG_DIR="${LSM_LOG_DIR:-/var/log/linux-security-monitor}"
-DATA_DIR="${LSM_DATA_DIR:-/var/lib/linux-security-monitor}"
-PID_FILE="/var/run/linux-security-monitor.pid"
+INSTALL_DIR="${LSM_INSTALL_DIR:-/opt/Sentinel_Linux}"
+CONFIG_DIR="${LSM_CONFIG_DIR:-/etc/Sentinel_Linux}"
+LOG_DIR="${LSM_LOG_DIR:-/var/log/Sentinel_Linux}"
+DATA_DIR="${LSM_DATA_DIR:-/var/lib/Sentinel_Linux}"
+PID_FILE="/var/run/Sentinel_Linux.pid"
 
 # Output settings
 VERBOSE=false
@@ -171,13 +171,13 @@ check_process() {
     fi
 
     # Check via systemd
-    if systemctl is-active --quiet linux-security-monitor 2>/dev/null; then
+    if systemctl is-active --quiet Sentinel_Linux 2>/dev/null; then
         log_check "Monitor process" "passed" "Running via systemd"
         return 0
     fi
 
     # Check via pgrep
-    if pgrep -f "linux-security-monitor" &>/dev/null; then
+    if pgrep -f "Sentinel_Linux" &>/dev/null; then
         log_check "Monitor process" "passed" "Running"
         return 0
     fi

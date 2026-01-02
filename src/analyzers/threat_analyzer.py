@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional
 import yaml
 
 from src.config.logging_config import get_logger
-from src.core.base_monitor import Event, EventType, Severity
+from src.core.base_monitor import Event, Severity
 from src.core.event_handler import AnalysisResult
 
 
@@ -181,7 +181,7 @@ class ThreatAnalyzer:
         # Load YAML rules
         for rule_file in rules_path.glob("**/*.yml"):
             try:
-                with open(rule_file, "r") as f:
+                with open(rule_file, "r", encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                     if data:
                         rule = DetectionRule.from_sigma(data)
@@ -192,7 +192,7 @@ class ThreatAnalyzer:
 
         for rule_file in rules_path.glob("**/*.yaml"):
             try:
-                with open(rule_file, "r") as f:
+                with open(rule_file, "r", encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                     if data:
                         rule = DetectionRule.from_sigma(data)
@@ -252,8 +252,8 @@ class ThreatAnalyzer:
         detection = rule.detection
         matched_fields: Dict[str, Any] = {}
 
-        for field, expected in detection.items():
-            actual = self._get_field_value(event, field)
+        for detection_field, expected in detection.items():
+            actual = self._get_field_value(event, detection_field)
 
             if actual is None:
                 return None
@@ -271,7 +271,7 @@ class ThreatAnalyzer:
             elif actual != expected:
                 return None
 
-            matched_fields[field] = actual
+            matched_fields[detection_field] = actual
 
         return RuleMatch(
             rule=rule,

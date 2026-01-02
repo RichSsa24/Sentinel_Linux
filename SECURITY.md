@@ -30,7 +30,7 @@ We recommend running with the minimum required privileges:
 useradd -r -s /sbin/nologin security-monitor
 
 # Grant specific capabilities instead of full root
-setcap cap_net_admin,cap_sys_ptrace+ep /usr/local/bin/linux-security-monitor
+setcap cap_net_admin,cap_sys_ptrace+ep /usr/local/bin/Sentinel_Linux
 
 # Use sudo with restricted commands
 # Add to /etc/sudoers.d/security-monitor:
@@ -57,7 +57,7 @@ All external inputs are validated:
 ### Recommended Configuration
 
 ```yaml
-# /etc/linux-security-monitor/config.yaml
+# /etc/Sentinel_Linux/config.yaml
 security:
   # Run with reduced privileges where possible
   drop_privileges: true
@@ -88,9 +88,9 @@ security:
 
 ```bash
 # Recommended permissions
-chmod 750 /opt/linux-security-monitor
-chmod 640 /etc/linux-security-monitor/config.yaml
-chmod 600 /etc/linux-security-monitor/secrets.yaml
+chmod 750 /opt/Sentinel_Linux
+chmod 640 /etc/Sentinel_Linux/config.yaml
+chmod 600 /etc/Sentinel_Linux/secrets.yaml
 chmod 700 /var/log/security-monitor
 ```
 

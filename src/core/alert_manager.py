@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import hashlib
 import threading
-import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -314,7 +313,8 @@ class AlertManager:
             return False
 
         minute_key = self._get_minute_key()
-        return self._alert_counts[minute_key] >= self._max_alerts_per_minute
+        count = self._alert_counts.get(minute_key, 0)
+        return count >= self._max_alerts_per_minute
 
     def _get_minute_key(self) -> str:
         """Get key for current minute for rate limiting."""
@@ -328,10 +328,11 @@ class AlertManager:
         event = processed_event.event
         now = datetime.now()
 
-        # Clean up expired rules
-        self._suppression_rules = [
-            r for r in self._suppression_rules if r.expires_at > now
-        ]
+        # Clean up expired rules (with lock protection)
+        with self._lock:
+            self._suppression_rules = [
+                r for r in self._suppression_rules if r.expires_at > now
+            ]
 
         # Check active rules
         event_str = f"{event.event_type.value} {event.description}"
@@ -464,6 +465,5 @@ class AlertManager:
                 "cache_size": len(self._alert_cache),
                 "reporters_count": len(self.reporters),
             }
-
 
 

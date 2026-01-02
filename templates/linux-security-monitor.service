@@ -1,6 +1,6 @@
 [Unit]
 Description=Linux Security Monitor - Enterprise Security Monitoring
-Documentation=https://github.com/yourusername/linux-security-monitor
+Documentation=https://github.com/RichSsa24/Sentinel_Linux
 After=network.target syslog.target auditd.service
 Wants=network.target
 
@@ -8,10 +8,10 @@ Wants=network.target
 Type=simple
 User=root
 Group=root
-WorkingDirectory=/opt/linux-security-monitor
+WorkingDirectory=/opt/Sentinel_Linux
 
 # Main process
-ExecStart=/opt/linux-security-monitor/venv/bin/python -m src.cli.main run --config /etc/linux-security-monitor/config.yaml
+ExecStart=/opt/Sentinel_Linux/venv/bin/python -m src.cli.main run --config /etc/Sentinel_Linux/config.yaml
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
 
@@ -24,7 +24,7 @@ StartLimitBurst=3
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=linux-security-monitor
+SyslogIdentifier=Sentinel_Linux
 
 # Environment
 Environment=PYTHONUNBUFFERED=1
@@ -42,8 +42,8 @@ RestrictRealtime=true
 RestrictSUIDSGID=true
 
 # Read-write paths for logs and data
-ReadWritePaths=/var/log/linux-security-monitor
-ReadWritePaths=/var/lib/linux-security-monitor
+ReadWritePaths=/var/log/Sentinel_Linux
+ReadWritePaths=/var/lib/Sentinel_Linux
 ReadWritePaths=/var/run
 
 # Allow reading system logs

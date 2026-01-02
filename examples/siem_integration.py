@@ -42,7 +42,7 @@ class SIEMExporter:
         return {
             "time": alert.timestamp.timestamp(),
             "host": alert.host,
-            "source": "linux-security-monitor",
+            "source": "Sentinel_Linux",
             "sourcetype": "lsm:alert",
             "event": {
                 "alert_id": alert.alert_id,
@@ -81,7 +81,7 @@ class SIEMExporter:
             },
             "labels": {
                 "alert_id": alert.alert_id,
-                "source": "linux-security-monitor",
+                "source": "Sentinel_Linux",
             },
         }
 

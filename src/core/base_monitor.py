@@ -8,7 +8,6 @@ a consistent interface for lifecycle management and data collection.
 from __future__ import annotations
 
 import threading
-import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -468,6 +467,5 @@ class BaseMonitor(ABC):
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Context manager exit."""
         self.stop()
-
 
 

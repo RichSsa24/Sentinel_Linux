@@ -10,7 +10,7 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from src.config.logging_config import get_logger
 from src.core.base_monitor import (
@@ -67,9 +67,21 @@ class LogMonitor(BaseMonitor):
     """
 
     DEFAULT_PATTERNS = [
-        {"pattern": "Failed password", "severity": "MEDIUM", "description": "Failed authentication"},
-        {"pattern": "BREAK-IN ATTEMPT", "severity": "CRITICAL", "description": "Break-in attempt"},
-        {"pattern": "segfault", "severity": "LOW", "description": "Segmentation fault"},
+        {
+            "pattern": "Failed password",
+            "severity": "MEDIUM",
+            "description": "Failed authentication",
+        },
+        {
+            "pattern": "BREAK-IN ATTEMPT",
+            "severity": "CRITICAL",
+            "description": "Break-in attempt",
+        },
+        {
+            "pattern": "segfault",
+            "severity": "LOW",
+            "description": "Segmentation fault",
+        },
         {"pattern": "Out of memory", "severity": "HIGH", "description": "OOM condition"},
         {"pattern": "kernel panic", "severity": "CRITICAL", "description": "Kernel panic"},
     ]
@@ -190,6 +202,5 @@ class LogMonitor(BaseMonitor):
             "severity": severity,
             "description": description or f"Match: {pattern}",
         }))
-
 
 

@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from src.config.logging_config import get_logger
-from src.core.base_monitor import Event, EventType
+from src.core.base_monitor import Event
 from src.core.event_handler import AnalysisResult
 
 
@@ -84,7 +84,9 @@ TECHNIQUES: Dict[str, MITRETechnique] = {
         technique_id="T1548",
         name="Abuse Elevation Control Mechanism",
         tactic="Privilege Escalation, Defense Evasion",
-        description="Adversaries may circumvent mechanisms designed to control elevated privileges.",
+        description=(
+            "Adversaries may circumvent mechanisms designed to control elevated privileges."
+        ),
         platforms=["Linux", "macOS", "Windows"],
     ),
     "T1068": MITRETechnique(
@@ -140,7 +142,9 @@ TECHNIQUES: Dict[str, MITRETechnique] = {
         technique_id="T1543",
         name="Create or Modify System Process",
         tactic="Persistence, Privilege Escalation",
-        description="Adversaries may create or modify system processes to execute malicious payloads.",
+        description=(
+            "Adversaries may create or modify system processes to execute malicious payloads."
+        ),
         platforms=["Linux", "macOS", "Windows"],
     ),
     "T1569": MITRETechnique(
@@ -344,6 +348,5 @@ class MITREMapper:
                 {"label": "Detected", "color": "#ff6666"},
             ],
         }
-
 
 

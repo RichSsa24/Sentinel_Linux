@@ -11,9 +11,8 @@ import os
 import platform
 import socket
 import subprocess
-from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import psutil
 
@@ -107,7 +106,7 @@ def get_linux_distro() -> Dict[str, str]:
 
     # Try /etc/os-release
     try:
-        with open("/etc/os-release", "r") as f:
+        with open("/etc/os-release", "r", encoding="utf-8") as f:
             for line in f:
                 if "=" in line:
                     key, value = line.strip().split("=", 1)
@@ -254,6 +253,5 @@ def get_process_list(include_cmdline: bool = False) -> List[Dict[str, Any]]:
             pass
 
     return processes
-
 
 

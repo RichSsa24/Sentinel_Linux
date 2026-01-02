@@ -16,17 +16,78 @@ from typing import Any, Dict, List
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.config.logging_config import setup_logging, get_logger
-from src.utils.system_utils import (
-    get_hostname,
-    get_system_info,
-    get_process_list,
-    get_network_interfaces,
-)
-from src.utils.crypto_utils import hash_file
+# Try to import from project modules, fallback to local implementations
+try:
+    from src.config.logging_config import setup_logging, get_logger
+    logger = get_logger(__name__)
+except ImportError:
+    import logging
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    logger = logging.getLogger(__name__)
+    def setup_logging(level="INFO"):
+        logging.getLogger().setLevel(getattr(logging, level))
 
+try:
+    from src.utils.system_utils import (
+        get_hostname,
+        get_system_info,
+        get_process_list,
+        get_network_interfaces,
+    )
+except ImportError:
+    import socket
+    import platform
+    import psutil
+    from datetime import datetime
+    
+    def get_hostname() -> str:
+        try:
+            return socket.gethostname()
+        except Exception:
+            return "unknown"
+    
+    def get_system_info() -> Dict[str, Any]:
+        return {
+            "hostname": get_hostname(),
+            "platform": platform.system(),
+            "platform_release": platform.release(),
+            "architecture": platform.machine(),
+        }
+    
+    def get_process_list(include_cmdline: bool = False) -> List[Dict[str, Any]]:
+        processes = []
+        for proc in psutil.process_iter(['pid', 'name', 'username', 'status', 'create_time', 'ppid'] + (['cmdline'] if include_cmdline else [])):
+            try:
+                info = proc.info
+                if 'create_time' in info and info['create_time']:
+                    info['create_time'] = datetime.fromtimestamp(info['create_time']).isoformat()
+                processes.append(info)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        return processes
+    
+    def get_network_interfaces() -> List[Dict[str, Any]]:
+        interfaces = []
+        try:
+            for iface, addrs in psutil.net_if_addrs().items():
+                interfaces.append({
+                    "name": iface,
+                    "addresses": [addr.address for addr in addrs],
+                })
+        except Exception:
+            pass
+        return interfaces
 
-logger = get_logger(__name__)
+try:
+    from src.utils.crypto_utils import hash_file
+except ImportError:
+    import hashlib
+    def hash_file(path: str, algorithm: str = "sha256") -> str:
+        hasher = hashlib.new(algorithm.lower())
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(65536), b""):
+                hasher.update(chunk)
+        return hasher.hexdigest()
 
 
 def create_process_baseline() -> Dict[str, Any]:
@@ -185,7 +246,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(
         "-o", "--output",
-        default="/var/lib/linux-security-monitor/baselines",
+        default="/var/lib/Sentinel_Linux/baselines",
         help="Output directory",
     )
     parser.add_argument(

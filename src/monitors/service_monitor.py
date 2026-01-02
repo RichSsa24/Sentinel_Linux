@@ -10,7 +10,7 @@ from __future__ import annotations
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from src.config.logging_config import get_logger
 from src.core.base_monitor import (
@@ -20,7 +20,6 @@ from src.core.base_monitor import (
     EventType,
     Severity,
 )
-from src.core.exceptions import CollectionError
 
 
 logger = get_logger(__name__)
@@ -405,6 +404,5 @@ class ServiceMonitor(BaseMonitor):
 
         results["healthy"] = len(results["issues"]) == 0
         return results
-
 
 

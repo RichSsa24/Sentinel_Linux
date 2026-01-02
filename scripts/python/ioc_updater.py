@@ -16,10 +16,16 @@ from typing import Any, Dict, List
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.config.logging_config import setup_logging, get_logger
-
-
-logger = get_logger(__name__)
+# Try to import from project modules, fallback to local implementations
+try:
+    from src.config.logging_config import setup_logging, get_logger
+    logger = get_logger(__name__)
+except ImportError:
+    import logging
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    logger = logging.getLogger(__name__)
+    def setup_logging(level="INFO"):
+        logging.getLogger().setLevel(getattr(logging, level))
 
 
 def load_existing_iocs(path: str) -> List[Dict[str, Any]]:
@@ -113,7 +119,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(
         "-o", "--output",
-        default="/var/lib/linux-security-monitor/ioc/iocs.json",
+        default="/var/lib/Sentinel_Linux/ioc/iocs.json",
         help="Output IOC database path",
     )
     parser.add_argument(

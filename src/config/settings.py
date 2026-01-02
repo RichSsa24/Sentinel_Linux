@@ -40,10 +40,10 @@ class ProcessMonitorConfig(MonitorConfig):
     """Configuration for process monitoring."""
 
     poll_interval: int = 30
-    baseline_path: str = "/var/lib/linux-security-monitor/baselines/processes.json"
+    baseline_path: str = "/var/lib/Sentinel_Linux/baselines/processes.json"
     alert_on_new_process: bool = False
     suspicious_paths: List[str] = Field(
-        default_factory=lambda: ["/tmp", "/dev/shm", "/var/tmp"]
+        default_factory=lambda: ["/tmp", "/dev/shm", "/var/tmp"]  # nosec B108
     )
     suspicious_names: List[str] = Field(
         default_factory=lambda: ["nc", "ncat", "netcat", "nmap", "tcpdump"]
@@ -139,14 +139,14 @@ class ThreatAnalyzerConfig(BaseModel):
     """Configuration for threat analyzer."""
 
     enabled: bool = True
-    rules_path: str = "/var/lib/linux-security-monitor/rules"
+    rules_path: str = "/var/lib/Sentinel_Linux/rules"
 
 
 class AnomalyDetectorConfig(BaseModel):
     """Configuration for anomaly detector."""
 
     enabled: bool = True
-    baseline_path: str = "/var/lib/linux-security-monitor/baselines"
+    baseline_path: str = "/var/lib/Sentinel_Linux/baselines"
     sensitivity: str = "medium"
     learning_period: int = Field(default=86400, ge=3600)
 
@@ -164,7 +164,7 @@ class IOCMatcherConfig(BaseModel):
     """Configuration for IOC matcher."""
 
     enabled: bool = True
-    ioc_database: str = "/var/lib/linux-security-monitor/ioc/iocs.json"
+    ioc_database: str = "/var/lib/Sentinel_Linux/ioc/iocs.json"
     update_interval: int = Field(default=3600, ge=300)
 
 
@@ -200,7 +200,7 @@ class JSONReporterConfig(BaseModel):
     """Configuration for JSON reporter."""
 
     enabled: bool = True
-    output_path: str = "/var/log/linux-security-monitor/events.json"
+    output_path: str = "/var/log/Sentinel_Linux/events.json"
     rotate: bool = True
     max_size_mb: int = Field(default=100, ge=1)
     backup_count: int = Field(default=5, ge=1)
@@ -243,9 +243,13 @@ class ReportersConfig(BaseModel):
     """Configuration for all reporters."""
 
     console: ConsoleReporterConfig = Field(default_factory=ConsoleReporterConfig)
-    json: JSONReporterConfig = Field(default_factory=JSONReporterConfig)
+    json: JSONReporterConfig = Field(
+        default_factory=JSONReporterConfig, alias="json_reporter"
+    )
     syslog: SyslogReporterConfig = Field(default_factory=SyslogReporterConfig)
     webhook: WebhookReporterConfig = Field(default_factory=WebhookReporterConfig)
+
+    model_config = {"populate_by_name": True}
 
 
 class RateLimitConfig(BaseModel):
@@ -268,8 +272,8 @@ class GlobalConfig(BaseModel):
 
     hostname: str = ""
     log_level: str = "INFO"
-    log_file: str = "/var/log/linux-security-monitor/monitor.log"
-    pid_file: str = "/var/run/linux-security-monitor.pid"
+    log_file: str = "/var/log/Sentinel_Linux/monitor.log"
+    pid_file: str = "/var/run/Sentinel_Linux.pid"
     debug: bool = False
 
     @field_validator("log_level")
@@ -358,8 +362,8 @@ def find_config_file() -> Optional[str]:
     """
     search_paths = [
         os.environ.get("LSM_CONFIG"),
-        "/etc/linux-security-monitor/config.yaml",
-        "/etc/linux-security-monitor/config.yml",
+        "/etc/Sentinel_Linux/config.yaml",
+        "/etc/Sentinel_Linux/config.yml",
         "./config.yaml",
         "./config.yml",
         str(Path(__file__).parent / "default_config.yaml"),
@@ -410,6 +414,5 @@ def validate_config(config: Dict[str, Any]) -> List[str]:
         errors.append(str(e))
 
     return errors
-
 
 

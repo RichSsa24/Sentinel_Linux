@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 import psutil
 
@@ -22,7 +22,6 @@ from src.core.base_monitor import (
     EventType,
     Severity,
 )
-from src.core.exceptions import CollectionError
 
 
 logger = get_logger(__name__)
@@ -388,6 +387,4 @@ class NetworkMonitor(BaseMonitor):
             "reputation": "unknown",
             "note": "Threat intelligence integration placeholder",
         }
-
-
 

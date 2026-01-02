@@ -1,5 +1,5 @@
 # Linux Security Monitor - Default Configuration
-# Copy this file to /etc/linux-security-monitor/config.yaml and customize
+# Copy this file to /etc/Sentinel_Linux/config.yaml and customize
 
 # Global settings
 global:
@@ -10,10 +10,10 @@ global:
   log_level: INFO
 
   # Log file path
-  log_file: /var/log/linux-security-monitor/monitor.log
+  log_file: /var/log/Sentinel_Linux/monitor.log
 
   # PID file for daemon mode
-  pid_file: /var/run/linux-security-monitor.pid
+  pid_file: /var/run/Sentinel_Linux.pid
 
   # Enable debug mode
   debug: false
@@ -33,7 +33,7 @@ monitors:
   process_monitor:
     enabled: true
     poll_interval: 30
-    baseline_path: /var/lib/linux-security-monitor/baselines/processes.json
+    baseline_path: /var/lib/Sentinel_Linux/baselines/processes.json
     alert_on_new_process: false
     suspicious_paths:
       - /tmp
@@ -142,19 +142,19 @@ analyzers:
   # Threat analysis engine
   threat_analyzer:
     enabled: true
-    rules_path: /var/lib/linux-security-monitor/rules
+    rules_path: /var/lib/Sentinel_Linux/rules
 
   # Anomaly detection
   anomaly_detector:
     enabled: true
-    baseline_path: /var/lib/linux-security-monitor/baselines
+    baseline_path: /var/lib/Sentinel_Linux/baselines
     sensitivity: medium
     learning_period: 86400
 
   # IOC matching
   ioc_matcher:
     enabled: true
-    ioc_database: /var/lib/linux-security-monitor/ioc/iocs.json
+    ioc_database: /var/lib/Sentinel_Linux/ioc/iocs.json
     update_interval: 3600
 
   # MITRE ATT&CK mapping
@@ -173,7 +173,7 @@ reporters:
   # JSON file output
   json:
     enabled: true
-    output_path: /var/log/linux-security-monitor/events.json
+    output_path: /var/log/Sentinel_Linux/events.json
     rotate: true
     max_size_mb: 100
     backup_count: 5

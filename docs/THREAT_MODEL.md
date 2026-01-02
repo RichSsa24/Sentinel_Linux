@@ -132,7 +132,7 @@ def correlate_sources(log_events, proc_events, net_events):
 # Monitor own configuration
 file_integrity_monitor:
   watched_paths:
-    - /etc/linux-security-monitor/config.yaml
+    - /etc/Sentinel_Linux/config.yaml
 ```
 
 ### T3: Alert Suppression

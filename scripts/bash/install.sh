@@ -7,7 +7,7 @@
 #
 # Options:
 #   -h, --help      Show this help message
-#   -d, --dir DIR   Installation directory (default: /opt/linux-security-monitor)
+#   -d, --dir DIR   Installation directory (default: /opt/Sentinel_Linux)
 #   -u, --user      Create dedicated service user
 #   -s, --systemd   Install systemd service
 #
@@ -15,13 +15,13 @@
 set -euo pipefail
 
 # Default values
-INSTALL_DIR="/opt/linux-security-monitor"
+INSTALL_DIR="/opt/Sentinel_Linux"
 CREATE_USER=false
 INSTALL_SERVICE=false
 SERVICE_USER="security-monitor"
-CONFIG_DIR="/etc/linux-security-monitor"
-LOG_DIR="/var/log/linux-security-monitor"
-DATA_DIR="/var/lib/linux-security-monitor"
+CONFIG_DIR="/etc/Sentinel_Linux"
+LOG_DIR="/var/log/Sentinel_Linux"
+DATA_DIR="/var/lib/Sentinel_Linux"
 
 # Colors
 RED='\033[0;31m'
@@ -42,7 +42,7 @@ Usage: sudo ./install.sh [options]
 
 Options:
   -h, --help      Show this help message
-  -d, --dir DIR   Installation directory (default: /opt/linux-security-monitor)
+  -d, --dir DIR   Installation directory (default: /opt/Sentinel_Linux)
   -u, --user      Create dedicated service user
   -s, --systemd   Install systemd service
 
@@ -97,7 +97,10 @@ check_python() {
     local python_version
     python_version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
 
-    if [[ $(echo "${python_version} < 3.9" | bc -l) -eq 1 ]]; then
+    # Compare versions without bc (which may not be installed)
+    local major minor
+    IFS='.' read -r major minor <<< "${python_version}"
+    if [[ ${major} -lt 3 ]] || [[ ${major} -eq 3 && ${minor} -lt 9 ]]; then
         log_error "Python 3.9+ required, found ${python_version}"
         exit 1
     fi
@@ -172,7 +175,7 @@ install_files() {
     if [[ -d "${bin_dir}" ]]; then
         ln -sf "${INSTALL_DIR}/venv/bin/lsm" "${bin_dir}/lsm" 2>/dev/null || true
         ln -sf "${INSTALL_DIR}/venv/bin/sentinel" "${bin_dir}/sentinel" 2>/dev/null || true
-        ln -sf "${INSTALL_DIR}/venv/bin/linux-security-monitor" "${bin_dir}/linux-security-monitor" 2>/dev/null || true
+        ln -sf "${INSTALL_DIR}/venv/bin/Sentinel_Linux" "${bin_dir}/Sentinel_Linux" 2>/dev/null || true
     fi
 }
 
@@ -213,8 +216,8 @@ install_systemd_service() {
 
     log_info "Installing systemd service..."
 
-    local service_file="/etc/systemd/system/linux-security-monitor.service"
-    local template_file="${INSTALL_DIR}/templates/linux-security-monitor.service"
+    local service_file="/etc/systemd/system/Sentinel_Linux.service"
+    local template_file="${INSTALL_DIR}/templates/Sentinel_Linux.service"
 
     # Check if template exists
     if [[ -f "${template_file}" ]]; then
@@ -229,7 +232,7 @@ install_systemd_service() {
         cat > "${service_file}" << EOF
 [Unit]
 Description=Linux Security Monitor - Enterprise Security Monitoring
-Documentation=https://github.com/yourusername/linux-security-monitor
+Documentation=https://github.com/RichSsa24/Sentinel_Linux
 After=network.target syslog.target auditd.service
 Wants=network.target
 
@@ -253,7 +256,7 @@ StartLimitBurst=3
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=linux-security-monitor
+SyslogIdentifier=Sentinel_Linux
 
 # Environment
 Environment=PYTHONUNBUFFERED=1
@@ -288,15 +291,15 @@ EOF
     chmod 644 "${service_file}"
     systemctl daemon-reload
 
-    if systemctl enable linux-security-monitor 2>/dev/null; then
+    if systemctl enable Sentinel_Linux 2>/dev/null; then
         log_info "Systemd service enabled"
     else
         log_warn "Could not enable service (may need manual enable)"
     fi
 
     log_info "Systemd service installed: ${service_file}"
-    log_info "Start with: systemctl start linux-security-monitor"
-    log_info "Check status: systemctl status linux-security-monitor"
+    log_info "Start with: systemctl start Sentinel_Linux"
+    log_info "Check status: systemctl status Sentinel_Linux"
 }
 
 print_summary() {
@@ -318,8 +321,8 @@ print_summary() {
     echo ""
     if [[ "${INSTALL_SERVICE}" == "true" ]]; then
         echo "Systemd service:"
-        echo "  sudo systemctl start linux-security-monitor"
-        echo "  sudo systemctl status linux-security-monitor"
+        echo "  sudo systemctl start Sentinel_Linux"
+        echo "  sudo systemctl status Sentinel_Linux"
         echo ""
     fi
 }

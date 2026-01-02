@@ -15,16 +15,15 @@ from __future__ import annotations
 import os
 import sys
 import signal
-import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import click
 
 # Ensure src is in path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.config.settings import Settings, get_settings, find_config_file, validate_config
+from src.config.settings import Settings, get_settings, find_config_file
 from src.config.logging_config import setup_logging, get_logger
 
 
@@ -35,7 +34,7 @@ def get_version() -> str:
     """Get package version."""
     try:
         from importlib.metadata import version
-        return version("linux-security-monitor")
+        return version("Sentinel_Linux")
     except Exception:
         return "1.0.0"
 
@@ -127,7 +126,17 @@ def config_validate(ctx: click.Context, config: Optional[str]) -> None:
 
         if ctx.obj.get("debug"):
             click.echo("\nLoaded configuration:")
-            click.echo(f"  Monitors enabled: {sum(1 for m in [settings.monitors.user_monitor, settings.monitors.process_monitor, settings.monitors.network_monitor, settings.monitors.file_integrity_monitor, settings.monitors.auth_monitor, settings.monitors.service_monitor, settings.monitors.log_monitor] if m.enabled)}")
+            monitors = [
+                settings.monitors.user_monitor,
+                settings.monitors.process_monitor,
+                settings.monitors.network_monitor,
+                settings.monitors.file_integrity_monitor,
+                settings.monitors.auth_monitor,
+                settings.monitors.service_monitor,
+                settings.monitors.log_monitor,
+            ]
+            enabled_count = sum(1 for m in monitors if m.enabled)
+            click.echo(f"  Monitors enabled: {enabled_count}")
             click.echo(f"  Log level: {settings.global_config.log_level}")
 
     except FileNotFoundError:
@@ -230,7 +239,7 @@ def rules_list(ctx: click.Context, rule_type: str) -> None:
 def report(ctx: click.Context, output: Optional[str], output_format: str, last: int) -> None:
     """Generate a security report."""
     import json
-    from datetime import datetime, timedelta
+    from datetime import datetime
 
     config_path = ctx.obj.get("config_path")
     setup_logging(level="WARNING")
@@ -256,8 +265,8 @@ def report(ctx: click.Context, output: Optional[str], output_format: str, last: 
 
         if output:
             output_path = Path(output)
-            with open(output_path, "w") as f:
-                json.dump(report_data, f, indent=2)
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(report_data, f, indent=2, ensure_ascii=False)
             click.echo(f"Report saved to: {output}")
         else:
             click.echo(json.dumps(report_data, indent=2))
@@ -278,7 +287,7 @@ def audit(ctx: click.Context, profile: str, output: Optional[str]) -> None:
 
     click.echo(f"Running security audit (profile: {profile})...")
 
-    audit_results = {
+    audit_results: Dict[str, Any] = {
         "timestamp": datetime.now().isoformat(),
         "profile": profile,
         "hostname": os.uname().nodename if hasattr(os, 'uname') else "unknown",
@@ -289,6 +298,7 @@ def audit(ctx: click.Context, profile: str, output: Optional[str]) -> None:
             "warnings": 0,
         }
     }
+    summary: Dict[str, int] = audit_results["summary"]
 
     # Basic checks
     checks = [
@@ -309,7 +319,8 @@ def audit(ctx: click.Context, profile: str, output: Optional[str]) -> None:
                     "status": result["status"],
                     "message": result.get("message", ""),
                 })
-                audit_results["summary"][result["status"]] = audit_results["summary"].get(result["status"], 0) + 1
+                status = result["status"]
+                summary[status] = summary.get(status, 0) + 1
             except Exception as e:
                 audit_results["checks"].append({
                     "name": name,
@@ -318,14 +329,14 @@ def audit(ctx: click.Context, profile: str, output: Optional[str]) -> None:
                 })
 
     # Print summary
-    click.echo(f"\nAudit Summary:")
+    click.echo("\nAudit Summary:")
     click.echo(f"  Passed:   {audit_results['summary'].get('passed', 0)}")
     click.echo(f"  Failed:   {audit_results['summary'].get('failed', 0)}")
     click.echo(f"  Warnings: {audit_results['summary'].get('warnings', 0)}")
 
     if output:
-        with open(output, "w") as f:
-            json.dump(audit_results, f, indent=2)
+        with open(output, "w", encoding="utf-8") as f:
+            json.dump(audit_results, f, indent=2, ensure_ascii=False)
         click.echo(f"\nResults saved to: {output}")
 
 
@@ -336,7 +347,7 @@ def _check_root_ssh() -> dict:
         if not sshd_config.exists():
             return {"status": "warning", "message": "sshd_config not found"}
 
-        content = sshd_config.read_text()
+        content = sshd_config.read_text(encoding="utf-8")
         if "PermitRootLogin no" in content or "PermitRootLogin prohibit-password" in content:
             return {"status": "passed", "message": "Root login disabled"}
         return {"status": "failed", "message": "Root login may be enabled"}
@@ -351,7 +362,7 @@ def _check_password_auth() -> dict:
         if not sshd_config.exists():
             return {"status": "warning", "message": "sshd_config not found"}
 
-        content = sshd_config.read_text()
+        content = sshd_config.read_text(encoding="utf-8")
         if "PasswordAuthentication no" in content:
             return {"status": "passed", "message": "Password auth disabled"}
         return {"status": "warning", "message": "Password auth may be enabled"}
@@ -394,7 +405,7 @@ def _check_auto_updates() -> dict:
     """Check if automatic updates are configured."""
     auto_upgrade = Path("/etc/apt/apt.conf.d/20auto-upgrades")
     if auto_upgrade.exists():
-        content = auto_upgrade.read_text()
+        content = auto_upgrade.read_text(encoding="utf-8")
         if "1" in content:
             return {"status": "passed", "message": "Auto updates enabled"}
 
@@ -403,7 +414,6 @@ def _check_auto_updates() -> dict:
 
 def _check_file_perms(path: str, expected: str) -> dict:
     """Check file permissions."""
-    import stat
 
     try:
         file_path = Path(path)
@@ -426,10 +436,10 @@ def status(ctx: click.Context) -> None:
     click.echo("-" * 40)
 
     # Check if running
-    pid_file = Path("/var/run/linux-security-monitor.pid")
+    pid_file = Path("/var/run/Sentinel_Linux.pid")
     if pid_file.exists():
         try:
-            pid = int(pid_file.read_text().strip())
+            pid = int(pid_file.read_text(encoding="utf-8").strip())
             if Path(f"/proc/{pid}").exists():
                 click.echo(f"Status: {click.style('Running', fg='green')} (PID: {pid})")
             else:

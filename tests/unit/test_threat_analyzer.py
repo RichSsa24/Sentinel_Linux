@@ -55,6 +55,17 @@ class TestThreatAnalyzer:
         brute_force_event: Event,
     ) -> None:
         """Should detect brute force events."""
+        # Add explicit rule for brute force detection
+        rule = DetectionRule(
+            id="test_brute_force",
+            title="Test Brute Force",
+            description="Test rule for brute force",
+            severity=Severity.HIGH,
+            detection={"event_type": "brute_force"},
+            mitre_techniques=["T1110"],
+        )
+        threat_analyzer.add_rule(rule)
+
         result = threat_analyzer.analyze(brute_force_event)
 
         assert result is not None
@@ -67,7 +78,7 @@ class TestThreatAnalyzer:
         login_event: Event,
     ) -> None:
         """Should analyze login events."""
-        result = threat_analyzer.analyze(login_event)
+        threat_analyzer.analyze(login_event)
         # May or may not match depending on rules
         # Just verify it doesn't crash
 

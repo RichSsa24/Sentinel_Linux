@@ -10,7 +10,6 @@ import hashlib
 import hmac
 import secrets
 import uuid
-from pathlib import Path
 from typing import Optional
 
 
@@ -185,6 +184,5 @@ def verify_password(password: str, hash_hex: str, salt: bytes) -> bool:
     """
     computed_hash, _ = hash_password(password, salt)
     return constant_time_compare(computed_hash, hash_hex)
-
 
 

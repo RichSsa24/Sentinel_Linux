@@ -120,7 +120,9 @@ def sanitize_command(command: str) -> str:
     return sanitized
 
 
-def sanitize_dict(data: Dict[str, Any], sensitive_keys: Optional[List[str]] = None) -> Dict[str, Any]:
+def sanitize_dict(
+    data: Dict[str, Any], sensitive_keys: Optional[List[str]] = None
+) -> Dict[str, Any]:
     """
     Sanitize dictionary by redacting sensitive keys.
 
@@ -219,6 +221,5 @@ def normalize_whitespace(text: str) -> str:
     lines = [line.strip() for line in text.split("\n")]
 
     return "\n".join(lines).strip()
-
 
 

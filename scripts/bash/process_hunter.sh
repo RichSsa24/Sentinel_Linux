@@ -201,7 +201,8 @@ check_high_cpu_processes() {
         name=$(echo "$line" | awk '{print $11}')
 
         # Check if CPU > 80%
-        if (( $(echo "$cpu > 80" | bc -l 2>/dev/null || echo 0) )); then
+        # Compare CPU usage without bc (use awk or arithmetic)
+        if awk "BEGIN {exit !($cpu > 80)}"; then
             local exe
             exe=$(readlink -f "/proc/$pid/exe" 2>/dev/null || echo "unknown")
 

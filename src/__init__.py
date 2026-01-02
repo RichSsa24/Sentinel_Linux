@@ -7,7 +7,7 @@ security event correlation.
 """
 
 __version__ = "1.0.0"
-__author__ = "Security Team"
+__author__ = "Ricardo Solís"
 __license__ = "MIT"
 
 from src.core.base_monitor import BaseMonitor
@@ -29,6 +29,5 @@ __all__ = [
     "MonitorInitError",
     "CollectionError",
 ]
-
 
 

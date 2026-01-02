@@ -9,11 +9,10 @@ from __future__ import annotations
 
 import hashlib
 import os
-import stat
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from src.config.logging_config import get_logger
 from src.core.base_monitor import (
@@ -23,7 +22,6 @@ from src.core.base_monitor import (
     EventType,
     Severity,
 )
-from src.core.exceptions import CollectionError
 
 
 logger = get_logger(__name__)
@@ -433,8 +431,8 @@ class FileIntegrityMonitor(BaseMonitor):
         }
 
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(output_path, "w") as f:
-            json.dump(output, f, indent=2)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(output, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Baseline saved to {output_path} with {len(baseline_data)} files")
         return baseline
@@ -451,7 +449,7 @@ class FileIntegrityMonitor(BaseMonitor):
         """
         import json
 
-        with open(baseline_path, "r") as f:
+        with open(baseline_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         # Reconstruct baseline
@@ -470,6 +468,5 @@ class FileIntegrityMonitor(BaseMonitor):
 
         current_state = self._build_baseline()
         return self._compare_states(old_state, current_state)
-
 
 

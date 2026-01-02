@@ -14,7 +14,7 @@ import logging
 import logging.handlers
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple, Union
 
 from pythonjsonlogger import jsonlogger
 
@@ -146,7 +146,7 @@ def setup_logging(
     console_handler.setLevel(numeric_level)
 
     if json_format:
-        console_formatter = SecurityJsonFormatter(
+        console_formatter: Union[SecurityJsonFormatter, ColoredFormatter] = SecurityJsonFormatter(
             "%(timestamp)s %(level)s %(name)s %(message)s"
         )
     else:
@@ -174,7 +174,7 @@ def setup_logging(
             file_handler.setLevel(numeric_level)
 
             if json_format:
-                file_formatter = SecurityJsonFormatter(
+                file_formatter: Union[SecurityJsonFormatter, logging.Formatter] = SecurityJsonFormatter(
                     "%(timestamp)s %(level)s %(name)s %(message)s"
                 )
             else:
@@ -188,8 +188,8 @@ def setup_logging(
         except PermissionError:
             # Fallback to user's home directory or temp
             fallback_paths = [
-                Path.home() / ".local" / "log" / "linux-security-monitor" / "monitor.log",
-                Path("/tmp") / "linux-security-monitor" / "monitor.log",
+                Path.home() / ".local" / "log" / "Sentinel_Linux" / "monitor.log",
+                Path("/tmp") / "Sentinel_Linux" / "monitor.log",
             ]
             for fallback in fallback_paths:
                 try:
@@ -201,7 +201,7 @@ def setup_logging(
                         encoding="utf-8",
                     )
                     file_handler.setLevel(numeric_level)
-                    file_formatter = logging.Formatter(
+                    file_formatter: logging.Formatter = logging.Formatter(
                         fmt="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
                         datefmt="%Y-%m-%d %H:%M:%S",
                     )
@@ -226,7 +226,7 @@ def setup_logging(
             syslog_handler.setLevel(numeric_level)
 
             syslog_formatter = logging.Formatter(
-                fmt="linux-security-monitor[%(process)d]: %(levelname)s %(message)s"
+                fmt="Sentinel_Linux[%(process)d]: %(levelname)s %(message)s"
             )
             syslog_handler.setFormatter(syslog_formatter)
             root_logger.addHandler(syslog_handler)
@@ -258,7 +258,7 @@ class LoggerAdapter(logging.LoggerAdapter):
 
     def process(
         self, msg: str, kwargs: Dict[str, Any]
-    ) -> tuple[str, Dict[str, Any]]:
+    ) -> Tuple[str, Dict[str, Any]]:
         """
         Process log message with extra context.
 
@@ -304,6 +304,5 @@ def get_security_logger(
         extra["user"] = user
 
     return LoggerAdapter(logger, extra)
-
 
 

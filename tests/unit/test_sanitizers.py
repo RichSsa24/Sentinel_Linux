@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from src.utils.sanitizers import (
     sanitize_log_message,
     sanitize_path,
@@ -132,6 +130,5 @@ class TestTruncate:
         result = truncate(text, 50)
         assert len(result) == 50
         assert result.endswith("...")
-
 
 

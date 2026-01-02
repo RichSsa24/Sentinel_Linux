@@ -82,7 +82,7 @@ class SyslogReporter:
             )
 
             formatter = logging.Formatter(
-                "linux-security-monitor: %(message)s"
+                "Sentinel_Linux: %(message)s"
             )
             self._handler.setFormatter(formatter)
 
@@ -127,18 +127,33 @@ class SyslogReporter:
 
         cef_severity = severity_map.get(alert.severity, 5)
 
-        # CEF header
-        cef = f"CEF:0|LinuxSecurityMonitor|LSM|1.0|{alert.alert_id}|{alert.title}|{cef_severity}|"
+        # Helper function to escape CEF special characters
+        def escape_cef(value: str) -> str:
+            """Escape special characters for CEF format."""
+            return value.replace("\\", "\\\\").replace("=", "\\=").replace("\n", " ").replace("\r", " ")
 
-        # Extension fields
+        def escape_cef_header(value: str) -> str:
+            """Escape pipe characters for CEF header."""
+            return value.replace("\\", "\\\\").replace("|", "\\|")
+
+        # CEF header (pipe-separated fields)
+        cef = (
+            f"CEF:0|LinuxSecurityMonitor|LSM|1.0|"
+            f"{escape_cef_header(alert.alert_id)}|"
+            f"{escape_cef_header(alert.title)}|"
+            f"{cef_severity}|"
+        )
+
+        # Extension fields (space-separated key=value pairs)
         extensions = [
-            f"dhost={alert.host}",
-            f"msg={alert.description[:200]}",
+            f"dhost={escape_cef(alert.host)}",
+            f"msg={escape_cef(alert.description[:200])}",
             f"rt={int(alert.timestamp.timestamp() * 1000)}",
         ]
 
         if alert.mitre_techniques:
-            extensions.append(f"cs1={','.join(alert.mitre_techniques)}")
+            techniques_str = escape_cef(",".join(alert.mitre_techniques))
+            extensions.append(f"cs1={techniques_str}")
             extensions.append("cs1Label=MITRETechniques")
 
         cef += " ".join(extensions)
@@ -150,6 +165,5 @@ class SyslogReporter:
         if self._handler and self._logger:
             self._logger.removeHandler(self._handler)
             self._handler.close()
-
 
 

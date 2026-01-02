@@ -25,32 +25,38 @@ from typing import List, Optional
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.config.settings import Settings, get_settings
-from src.config.logging_config import setup_logging, get_logger
-from src.core.event_handler import EventHandler
-from src.core.alert_manager import AlertManager
-from src.monitors import (
-    UserMonitor,
-    ProcessMonitor,
-    NetworkMonitor,
-    FileIntegrityMonitor,
-    AuthMonitor,
-    ServiceMonitor,
-    LogMonitor,
-)
-from src.analyzers import (
-    ThreatAnalyzer,
-    AnomalyDetector,
-    IOCMatcher,
-    MITREMapper,
-)
-from src.reporters import (
-    ConsoleReporter,
-    JSONReporter,
-    SyslogReporter,
-    WebhookReporter,
-)
-
+# Import project modules - these are required for this script
+try:
+    from src.config.settings import Settings, get_settings
+    from src.config.logging_config import setup_logging, get_logger
+    from src.core.event_handler import EventHandler
+    from src.core.alert_manager import AlertManager
+    from src.monitors import (
+        UserMonitor,
+        ProcessMonitor,
+        NetworkMonitor,
+        FileIntegrityMonitor,
+        AuthMonitor,
+        ServiceMonitor,
+        LogMonitor,
+    )
+    from src.analyzers import (
+        ThreatAnalyzer,
+        AnomalyDetector,
+        IOCMatcher,
+        MITREMapper,
+    )
+    from src.reporters import (
+        ConsoleReporter,
+        JSONReporter,
+        SyslogReporter,
+        WebhookReporter,
+    )
+except ImportError as e:
+    print(f"Error: Failed to import required modules: {e}", file=sys.stderr)
+    print("This script requires the full Linux Security Monitor project to be installed.", file=sys.stderr)
+    print("Please ensure you are running from the project root directory.", file=sys.stderr)
+    sys.exit(1)
 
 logger = get_logger(__name__)
 

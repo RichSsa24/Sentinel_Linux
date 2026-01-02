@@ -95,11 +95,21 @@ def validate_path(
     if "\x00" in path:
         raise ValidationError("Path contains null byte", field="path")
 
+    # Check for path traversal attempts BEFORE normalization
+    # Normalize resolves .. so we need to check the original path
+    if ".." in path:
+        # Check if .. appears in a way that could be used for traversal
+        parts = path.split(os.sep)
+        if ".." in parts:
+            raise ValidationError("Path traversal not allowed", field="path")
+
     # Normalize path
     normalized = os.path.normpath(path)
 
-    # Check for path traversal attempts
-    if ".." in normalized.split(os.sep):
+    # Additional check: ensure normalized path doesn't escape base directory
+    # Check if normalized path still contains .. components
+    normalized_parts = normalized.split(os.sep)
+    if ".." in normalized_parts:
         raise ValidationError("Path traversal not allowed", field="path")
 
     path_obj = Path(normalized)
@@ -196,7 +206,10 @@ def validate_hostname(hostname: str) -> bool:
         raise ValidationError("Hostname too long", field="hostname")
 
     # RFC 1123 hostname pattern
-    pattern = r"^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$"
+    pattern = (
+        r"^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?"
+        r"(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$"
+    )
 
     if not re.match(pattern, hostname):
         raise ValidationError(f"Invalid hostname: {hostname}", field="hostname")
@@ -265,7 +278,6 @@ def validate_hash(hash_value: str, algorithm: str = "sha256") -> bool:
 
     if not re.match(r"^[a-fA-F0-9]+$", hash_value):
         raise ValidationError("Hash contains invalid characters", field="hash")
-
     return True
 
 

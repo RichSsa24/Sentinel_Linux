@@ -8,7 +8,36 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/lib/common.sh"
+
+# Common functions
+get_hostname() {
+    hostname 2>/dev/null || echo "unknown"
+}
+
+get_timestamp() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
+log_section() {
+    echo ""
+    echo "=== $1 ==="
+}
+
+log_subsection() {
+    echo ""
+    echo "--- $1 ---"
+}
+
+print_table_row() {
+    printf "  %-20s %s\n" "$1:" "$2"
+}
+
+require_root() {
+    if [[ $EUID -ne 0 ]]; then
+        echo "Error: This script must be run as root" >&2
+        exit 1
+    fi
+}
 
 audit_passwd() {
     log_section "User Account Analysis"

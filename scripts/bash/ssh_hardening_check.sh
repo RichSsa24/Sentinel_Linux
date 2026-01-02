@@ -8,7 +8,33 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/lib/common.sh"
+
+# Common functions
+log_section() {
+    echo ""
+    echo "=== $1 ==="
+}
+
+log_result() {
+    local name="$1"
+    local status="$2"
+    local message="$3"
+    case "$status" in
+        OK)   echo "[OK]   $name: $message" ;;
+        WARN) echo "[WARN] $name: $message" ;;
+        FAIL) echo "[FAIL] $name: $message" ;;
+        INFO) echo "[INFO] $name: $message" ;;
+        *)    echo "[$status] $name: $message" ;;
+    esac
+}
+
+log_error() {
+    echo "[ERROR] $1" >&2
+}
+
+print_table_row() {
+    printf "  %-20s %s\n" "$1:" "$2"
+}
 
 SSH_CONFIG="${1:-/etc/ssh/sshd_config}"
 

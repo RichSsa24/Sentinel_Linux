@@ -16,11 +16,35 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.config.logging_config import setup_logging, get_logger
-from src.utils.system_utils import get_system_info, get_hostname
+# Try to import from project modules, fallback to local implementations
+try:
+    from src.config.logging_config import setup_logging, get_logger
+    logger = get_logger(__name__)
+except ImportError:
+    import logging
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    logger = logging.getLogger(__name__)
+    def setup_logging(level="INFO"):
+        logging.getLogger().setLevel(getattr(logging, level))
 
-
-logger = get_logger(__name__)
+try:
+    from src.utils.system_utils import get_system_info, get_hostname
+except ImportError:
+    import socket
+    import platform
+    def get_hostname() -> str:
+        try:
+            return socket.gethostname()
+        except Exception:
+            return "unknown"
+    
+    def get_system_info() -> Dict[str, Any]:
+        return {
+            "hostname": get_hostname(),
+            "platform": platform.system(),
+            "platform_release": platform.release(),
+            "architecture": platform.machine(),
+        }
 
 
 def load_events(
@@ -194,7 +218,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(
         "-i", "--input",
-        default="/var/log/linux-security-monitor/events.json",
+        default="/var/log/Sentinel_Linux/events.json",
         help="Input events file",
     )
     parser.add_argument(

@@ -6,7 +6,7 @@ title: SSH Brute Force Attack
 id: lsm-001
 status: experimental
 description: Detects SSH brute force attacks based on multiple failed authentication attempts
-author: Security Team
+author: Ricardo Solís
 date: 2024/01/01
 logsource:
     product: linux
@@ -31,7 +31,7 @@ title: Suspicious Process from Temp Directory
 id: lsm-002
 status: experimental
 description: Detects process execution from temporary directories
-author: Security Team
+author: Ricardo Solís
 date: 2024/01/01
 logsource:
     product: linux
@@ -57,7 +57,7 @@ title: Root User Direct Login
 id: lsm-003
 status: experimental
 description: Detects direct login as root user
-author: Security Team
+author: Ricardo Solís
 date: 2024/01/01
 logsource:
     product: linux
@@ -83,7 +83,7 @@ title: Critical File Modification
 id: lsm-004
 status: experimental
 description: Detects modification of critical system files
-author: Security Team
+author: Ricardo Solís
 date: 2024/01/01
 logsource:
     product: linux
@@ -113,7 +113,7 @@ title: New Systemd Service Created
 id: lsm-005
 status: experimental
 description: Detects creation of new systemd service units
-author: Security Team
+author: Ricardo Solís
 date: 2024/01/01
 logsource:
     product: linux

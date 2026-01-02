@@ -19,14 +19,84 @@ set -euo pipefail
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Source libraries
-# shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
-
 # Default values
 OUTPUT_FILE=""
 OUTPUT_FORMAT="text"
 QUICK_MODE=false
+
+# Common functions
+command_exists() {
+    command -v "$1" &>/dev/null
+}
+
+get_hostname() {
+    hostname 2>/dev/null || echo "unknown"
+}
+
+get_os_release() {
+    if [[ -f /etc/os-release ]]; then
+        grep "^PRETTY_NAME=" /etc/os-release | cut -d'"' -f2 || echo "Unknown"
+    elif [[ -f /etc/redhat-release ]]; then
+        cat /etc/redhat-release
+    else
+        echo "Unknown"
+    fi
+}
+
+get_kernel_version() {
+    uname -r
+}
+
+get_timestamp() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
+get_service_status() {
+    local service="$1"
+    if command_exists systemctl; then
+        systemctl is-active "$service" 2>/dev/null || echo "not-found"
+    elif command_exists service; then
+        service "$service" status &>/dev/null && echo "running" || echo "stopped"
+    else
+        echo "unknown"
+    fi
+}
+
+log_section() {
+    echo ""
+    echo "=== $1 ==="
+}
+
+log_subsection() {
+    echo ""
+    echo "--- $1 ---"
+}
+
+log_result() {
+    local name="$1"
+    local status="$2"
+    local message="$3"
+    case "$status" in
+        OK)   echo "[OK]   $name: $message" ;;
+        WARN) echo "[WARN] $name: $message" ;;
+        FAIL) echo "[FAIL] $name: $message" ;;
+        INFO) echo "[INFO] $name: $message" ;;
+        SKIP) echo "[SKIP] $name: $message" ;;
+        *)    echo "[$status] $name: $message" ;;
+    esac
+}
+
+log_error() {
+    echo "[ERROR] $1" >&2
+}
+
+log_warning() {
+    echo "[WARN] $1"
+}
+
+print_table_row() {
+    printf "  %-20s %s\n" "$1:" "$2"
+}
 
 show_help() {
     cat << 'EOF'

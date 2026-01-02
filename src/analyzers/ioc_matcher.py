@@ -6,14 +6,11 @@ Matches events against known malicious indicators.
 
 from __future__ import annotations
 
-import hashlib
-import ipaddress
 import json
 import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from src.config.logging_config import get_logger
@@ -95,11 +92,36 @@ class IOCMatcher:
     def _load_builtin_iocs(self) -> None:
         """Load built-in sample IOCs."""
         builtin = [
-            IOC(type="process", value="mimikatz", description="Credential dumping tool", severity="critical"),
-            IOC(type="process", value="meterpreter", description="Metasploit payload", severity="critical"),
-            IOC(type="process", value="cobalt", description="Cobalt Strike beacon", severity="critical"),
-            IOC(type="path", value="/tmp/.*\\.elf$", description="ELF in temp directory", severity="high"),
-            IOC(type="path", value="/dev/shm/.*", description="File in shared memory", severity="medium"),
+            IOC(
+                type="process",
+                value="mimikatz",
+                description="Credential dumping tool",
+                severity="critical",
+            ),
+            IOC(
+                type="process",
+                value="meterpreter",
+                description="Metasploit payload",
+                severity="critical",
+            ),
+            IOC(
+                type="process",
+                value="cobalt",
+                description="Cobalt Strike beacon",
+                severity="critical",
+            ),
+            IOC(
+                type="path",
+                value="/tmp/.*\\.elf$",  # nosec B108
+                description="ELF in temp directory",
+                severity="high",
+            ),
+            IOC(
+                type="path",
+                value="/dev/shm/.*",  # nosec B108
+                description="File in shared memory",
+                severity="medium",
+            ),
         ]
 
         for ioc in builtin:
@@ -118,7 +140,7 @@ class IOCMatcher:
         count = 0
 
         try:
-            with open(path, "r") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             iocs = data if isinstance(data, list) else data.get("iocs", [])
@@ -295,9 +317,9 @@ class IOCMatcher:
         # Check metadata for hashes
         hash_fields = ["hash", "sha256", "sha1", "md5", "file_hash"]
 
-        for field in hash_fields:
-            if field in event.metadata:
-                hash_value = event.metadata[field].lower()
+        for hash_field in hash_fields:
+            if hash_field in event.metadata:
+                hash_value = event.metadata[hash_field].lower()
 
                 for hash_type, hash_set in self._hash_iocs.items():
                     if hash_value in hash_set:

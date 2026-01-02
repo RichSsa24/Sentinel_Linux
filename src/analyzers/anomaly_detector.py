@@ -8,15 +8,14 @@ from __future__ import annotations
 
 import json
 import math
-import os
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from src.config.logging_config import get_logger
-from src.core.base_monitor import Event, EventType
+from src.core.base_monitor import Event
 from src.core.event_handler import AnalysisResult
 
 
@@ -112,7 +111,7 @@ class AnomalyDetector:
             return
 
         try:
-            with open(baseline_file, "r") as f:
+            with open(baseline_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             for metric, stats in data.get("metrics", {}).items():
@@ -154,8 +153,8 @@ class AnomalyDetector:
             },
         }
 
-        with open(baseline_file, "w") as f:
-            json.dump(data, f, indent=2)
+        with open(baseline_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Saved baseline with {len(self._metrics)} metrics")
 

@@ -1,20 +1,58 @@
 # Usage Guide
 
+## Overview
+
+**What this guide covers**: This document explains how to use Sentinel Linux, including running monitors, configuring settings, generating reports, and integrating with other systems.
+
+**Who should read this**:
+- **System Administrators**: Setting up and running Sentinel Linux in production
+- **SOC Analysts**: Using Sentinel Linux for threat detection and incident response
+- **Security Engineers**: Configuring advanced features and custom rules
+- **DevOps Engineers**: Integrating Sentinel Linux into automated workflows
+
+**Why this guide exists**: Sentinel Linux has many features and configuration options. This guide helps you use them effectively.
+
 ## Quick Start
+
+**What this section covers**: Basic commands to get started quickly.
+
+**For**: Users who want to start using Sentinel Linux immediately.
 
 ### Running the Monitor
 
+**What this does**: Starts the security monitoring system.
+
+**Why you need it**: Monitoring must be running to detect threats.
+
+**Basic execution with default configuration**:
 ```bash
-# Basic execution with default configuration
+# What this does: Starts monitoring with default settings from /etc/Sentinel_Linux/config.yaml
+# When to use: Standard production deployment
+# Why sudo: Requires root privileges to access system resources
 sudo python scripts/python/run_monitor.py
+```
 
-# With custom configuration
+**With custom configuration**:
+```bash
+# What this does: Starts monitoring with a specific configuration file
+# When to use: Testing different configurations, per-environment configs
+# Why it's useful: Allows multiple configurations for different scenarios
 sudo python scripts/python/run_monitor.py --config /path/to/config.yaml
+```
 
-# Verbose output
+**Verbose output**:
+```bash
+# What this does: Enables detailed logging to console
+# When to use: Debugging, initial setup, troubleshooting
+# Why it's useful: Shows what's happening in real-time
 sudo python scripts/python/run_monitor.py --verbose
+```
 
-# Dry run (no alerts sent)
+**Dry run (no alerts sent)**:
+```bash
+# What this does: Runs monitoring but doesn't send alerts
+# When to use: Testing configuration, verifying detection without alerting
+# Why it's useful: Safe way to test without generating false alerts
 sudo python scripts/python/run_monitor.py --dry-run
 ```
 
@@ -36,35 +74,85 @@ sudo ./scripts/bash/ssh_hardening_check.sh
 
 ## Configuration
 
+**What this section covers**: How to configure Sentinel Linux to match your environment and requirements.
+
+**For**: All users who want to customize Sentinel Linux behavior.
+
+**Why configuration matters**: Default settings may not be appropriate for all environments. Proper configuration ensures:
+- Relevant threats are detected
+- Alert fatigue is minimized
+- System performance is optimized
+- Integration with existing tools works correctly
+
 ### Configuration File Location
 
-Default locations (in order of precedence):
-1. `--config` command line argument
-2. `$LSM_CONFIG` environment variable
-3. `/etc/linux-security-monitor/config.yaml`
-4. `./config.yaml`
-5. `src/config/default_config.yaml`
+**What this means**: Where Sentinel Linux looks for configuration files.
+
+**Why multiple locations**: Different scenarios require different configuration sources:
+- Command line: Override for testing or one-time runs
+- Environment variable: Useful in containers or automated deployments
+- System directory: Standard location for production
+- Current directory: Convenient for development
+- Default: Fallback if no other config is found
+
+**Precedence order** (first found is used):
+1. `--config` command line argument - Highest priority, overrides everything
+   - **When to use**: Testing, temporary changes
+2. `$LSM_CONFIG` environment variable - Useful for automation
+   - **When to use**: Container deployments, CI/CD pipelines
+3. `/etc/Sentinel_Linux/config.yaml` - Standard production location
+   - **When to use**: Production deployments, system-wide configuration
+4. `./config.yaml` - Current directory
+   - **When to use**: Development, per-project configurations
+5. `src/config/default_config.yaml` - Default fallback
+   - **When used**: No other configuration found
 
 ### Configuration Options
 
 #### Global Settings
 
+**What this section does**: Controls overall behavior of Sentinel Linux.
+
+**For**: All users who want to customize basic settings.
+
+**Configuration**:
+
 ```yaml
 # Global configuration
 global:
   # Hostname override (default: system hostname)
+  # What this does: Overrides system hostname in alerts and reports
+  # When to use: Virtual environments, containers, multi-homed systems
+  # Why it's useful: Ensures consistent hostname identification
   hostname: ""
   
   # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  # What this does: Controls verbosity of logging
+  # When to use each level:
+  #   DEBUG: Development, troubleshooting (very verbose)
+  #   INFO: Production (normal operation)
+  #   WARNING: Production (only warnings and errors)
+  #   ERROR: Critical systems (only errors)
+  #   CRITICAL: Emergency (only critical failures)
+  # Why it matters: Reduces log volume in production
   log_level: INFO
   
   # Log file path
-  log_file: /var/log/linux-security-monitor/monitor.log
+  # What this does: Where application logs are written
+  # Why /var/log: Standard location for application logs
+  # Why it matters: Centralized log management, rotation
+  log_file: /var/log/Sentinel_Linux/monitor.log
   
   # PID file for daemon mode
-  pid_file: /var/run/linux-security-monitor.pid
+  # What this does: Stores process ID when running as daemon
+  # Why it's needed: Allows scripts to find and manage the process
+  # When to use: Running as systemd service or daemon
+  pid_file: /var/run/Sentinel_Linux.pid
   
   # Enable debug mode
+  # What this does: Enables additional debugging information
+  # When to use: Troubleshooting, development
+  # Why it's off by default: Generates large amounts of output
   debug: false
 ```
 
@@ -85,7 +173,7 @@ monitors:
   process_monitor:
     enabled: true
     poll_interval: 30
-    baseline_path: /var/lib/linux-security-monitor/baselines/processes.json
+    baseline_path: /var/lib/Sentinel_Linux/baselines/processes.json
     alert_on_new_process: false
     suspicious_paths:
       - /tmp
@@ -173,17 +261,17 @@ monitors:
 analyzers:
   threat_analyzer:
     enabled: true
-    rules_path: /var/lib/linux-security-monitor/rules
+    rules_path: /var/lib/Sentinel_Linux/rules
     
   anomaly_detector:
     enabled: true
-    baseline_path: /var/lib/linux-security-monitor/baselines
+    baseline_path: /var/lib/Sentinel_Linux/baselines
     sensitivity: medium  # low, medium, high
     learning_period: 86400  # seconds (24 hours)
     
   ioc_matcher:
     enabled: true
-    ioc_database: /var/lib/linux-security-monitor/ioc/iocs.json
+    ioc_database: /var/lib/Sentinel_Linux/ioc/iocs.json
     update_interval: 3600
     
   mitre_mapper:
@@ -202,7 +290,7 @@ reporters:
     
   json:
     enabled: true
-    output_path: /var/log/linux-security-monitor/events.json
+    output_path: /var/log/Sentinel_Linux/events.json
     rotate: true
     max_size_mb: 100
     backup_count: 5
@@ -402,7 +490,7 @@ sudo python scripts/python/run_monitor.py --verbose
 
 # Output:
 # [2024-01-15 10:30:01] INFO - Linux Security Monitor starting...
-# [2024-01-15 10:30:01] INFO - Loading configuration from /etc/linux-security-monitor/config.yaml
+# [2024-01-15 10:30:01] INFO - Loading configuration from /etc/Sentinel_Linux/config.yaml
 # [2024-01-15 10:30:02] INFO - UserMonitor initialized
 # [2024-01-15 10:30:02] INFO - ProcessMonitor initialized
 # [2024-01-15 10:30:02] INFO - NetworkMonitor initialized
@@ -424,10 +512,10 @@ sudo python scripts/python/baseline_creator.py --type full
 # - Captured 32 listeners, 156 connections
 # Creating file integrity baseline...
 # - Hashed 1,234 files
-# Baseline saved to /var/lib/linux-security-monitor/baselines/
+# Baseline saved to /var/lib/Sentinel_Linux/baselines/
 
 # View baseline
-cat /var/lib/linux-security-monitor/baselines/processes.json | jq '.processes | length'
+cat /var/lib/Sentinel_Linux/baselines/processes.json | jq '.processes | length'
 # 245
 ```
 
@@ -452,7 +540,7 @@ sudo python scripts/python/generate_report.py \
 
 ```bash
 # Configure syslog forwarding
-cat >> /etc/linux-security-monitor/config.yaml << 'EOF'
+cat >> /etc/Sentinel_Linux/config.yaml << 'EOF'
 reporters:
   syslog:
     enabled: true
@@ -463,7 +551,7 @@ reporters:
 EOF
 
 # Restart monitor
-sudo systemctl restart linux-security-monitor
+sudo systemctl restart Sentinel_Linux
 
 # Verify syslog output
 sudo tcpdump -i any port 514 -A | head -20
@@ -514,7 +602,7 @@ reporters:
 
 ### Custom Detection Rules
 
-Create custom Sigma rules in `/var/lib/linux-security-monitor/rules/sigma/`:
+Create custom Sigma rules in `/var/lib/Sentinel_Linux/rules/sigma/`:
 
 ```yaml
 # custom_ssh_bruteforce.yml
@@ -539,7 +627,7 @@ tags:
 
 ### Custom YARA Rules
 
-Create YARA rules in `/var/lib/linux-security-monitor/rules/yara/`:
+Create YARA rules in `/var/lib/Sentinel_Linux/rules/yara/`:
 
 ```yara
 rule SuspiciousScript
@@ -563,15 +651,15 @@ rule SuspiciousScript
 ### Scheduled Audits with Cron
 
 ```bash
-# Add to /etc/cron.d/linux-security-monitor
+# Add to /etc/cron.d/Sentinel_Linux
 # Daily system audit at 2 AM
-0 2 * * * root /opt/linux-security-monitor/scripts/bash/system_audit.sh -o /var/log/linux-security-monitor/daily_audit_$(date +\%Y\%m\%d).txt
+0 2 * * * root /opt/Sentinel_Linux/scripts/bash/system_audit.sh -o /var/log/Sentinel_Linux/daily_audit_$(date +\%Y\%m\%d).txt
 
 # Hourly user audit
-0 * * * * root /opt/linux-security-monitor/scripts/bash/user_audit.sh --quick >> /var/log/linux-security-monitor/user_audit.log
+0 * * * * root /opt/Sentinel_Linux/scripts/bash/user_audit.sh --quick >> /var/log/Sentinel_Linux/user_audit.log
 
 # Weekly comprehensive report
-0 3 * * 0 root /opt/linux-security-monitor/venv/bin/python /opt/linux-security-monitor/scripts/python/generate_report.py --format html --output /var/www/html/security_report.html
+0 3 * * 0 root /opt/Sentinel_Linux/venv/bin/python /opt/Sentinel_Linux/scripts/python/generate_report.py --format html --output /var/www/html/security_report.html
 ```
 
 ## Troubleshooting
@@ -583,7 +671,7 @@ rule SuspiciousScript
 sudo python scripts/python/run_monitor.py --debug --log-level DEBUG
 
 # Check debug output
-tail -f /var/log/linux-security-monitor/monitor.log
+tail -f /var/log/Sentinel_Linux/monitor.log
 ```
 
 ### Common Issues

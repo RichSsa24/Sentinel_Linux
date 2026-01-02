@@ -11,7 +11,7 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 from src.config.logging_config import get_logger
 from src.core.base_monitor import (
@@ -166,6 +166,9 @@ class AuthMonitor(BaseMonitor):
     def _parse_auth_log(self) -> List[AuthAttempt]:
         """Parse auth log for new entries."""
         attempts: List[AuthAttempt] = []
+
+        if not self.auth_log_path:
+            return attempts
 
         if not os.path.exists(self.auth_log_path):
             return attempts
@@ -389,6 +392,5 @@ class AuthMonitor(BaseMonitor):
                 for ip, attempts in top_ips
             ],
         }
-
 
 

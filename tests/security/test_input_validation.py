@@ -42,7 +42,7 @@ class TestInjectionPrevention:
         ]
 
         for cmd in malicious_commands:
-            sanitized = sanitize_command(cmd)
+            sanitize_command(cmd)
             # Should not contain the original dangerous patterns
             # (exact behavior depends on implementation)
 
@@ -50,7 +50,7 @@ class TestInjectionPrevention:
         """Should prevent log injection attacks."""
         # Attempt to inject fake log entry
         malicious = "Normal log\n[CRITICAL] Fake alert: system compromised"
-        sanitized = sanitize_log_message(malicious)
+        sanitize_log_message(malicious)
 
         # Should not allow newline-based injection
         # The message should be sanitized
@@ -99,8 +99,7 @@ class TestInputBoundaryChecks:
     def test_handles_unicode_input(self) -> None:
         """Should handle unicode input safely."""
         unicode_input = "Test message: "
-        sanitized = sanitize_log_message(unicode_input)
+        sanitize_log_message(unicode_input)
         # Should not crash
-
 
 

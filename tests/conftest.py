@@ -5,7 +5,6 @@ Pytest configuration and fixtures for Linux Security Monitor tests.
 from __future__ import annotations
 
 import json
-import os
 import tempfile
 from datetime import datetime
 from pathlib import Path
@@ -78,9 +77,18 @@ def sample_auth_log(temp_dir: Path) -> Path:
     log_file = temp_dir / "auth.log"
 
     log_lines = [
-        "Dec 14 10:30:00 testhost sshd[1234]: Accepted publickey for testuser from 192.168.1.100 port 22 ssh2",
-        "Dec 14 10:31:00 testhost sshd[1235]: Failed password for invalid user baduser from 10.0.0.1 port 22",
-        "Dec 14 10:32:00 testhost sudo: testuser : TTY=pts/0 ; PWD=/home/testuser ; COMMAND=/bin/ls",
+        (
+            "Dec 14 10:30:00 testhost sshd[1234]: "
+            "Accepted publickey for testuser from 192.168.1.100 port 22 ssh2"
+        ),
+        (
+            "Dec 14 10:31:00 testhost sshd[1235]: "
+            "Failed password for invalid user baduser from 10.0.0.1 port 22"
+        ),
+        (
+            "Dec 14 10:32:00 testhost sudo: testuser : "
+            "TTY=pts/0 ; PWD=/home/testuser ; COMMAND=/bin/ls"
+        ),
     ]
 
     log_file.write_text("\n".join(log_lines))
@@ -155,6 +163,5 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "integration: marks integration tests")
     config.addinivalue_line("markers", "security: marks security tests")
     config.addinivalue_line("markers", "requires_root: marks tests needing root")
-
 
 

@@ -16,7 +16,7 @@ from src.config.logging_config import get_logger
 from src.config.settings import Settings
 from src.core.event_handler import EventHandler
 from src.core.alert_manager import AlertManager
-from src.core.base_monitor import BaseMonitor, Event
+from src.core.base_monitor import BaseMonitor
 
 
 logger = get_logger(__name__)
@@ -25,7 +25,7 @@ logger = get_logger(__name__)
 class MonitorManager:
     """
     Central manager for all security monitoring components.
-    
+
     Coordinates monitors, analyzers, and reporters to provide
     comprehensive security monitoring.
     """
@@ -159,10 +159,10 @@ class MonitorManager:
             except Exception as e:
                 logger.error(f"Failed to initialize ConsoleReporter: {e}")
 
-        if reporter_configs.json.enabled:
+        if reporter_configs.json_reporter.enabled:
             try:
                 self.reporters.append(
-                    JSONReporter(reporter_configs.json.model_dump())
+                    JSONReporter(reporter_configs.json_reporter.model_dump())
                 )
             except Exception as e:
                 logger.error(f"Failed to initialize JSONReporter: {e}")
@@ -232,6 +232,7 @@ class MonitorManager:
         self.start()
 
         try:
+            cleanup_counter = 0
             while self.running:
                 for monitor in self.monitors:
                     try:
@@ -241,6 +242,17 @@ class MonitorManager:
                                 self.event_handler.process(event)
                     except Exception as e:
                         logger.error(f"Error collecting from {monitor.name}: {e}")
+
+                # Clean up alert cache periodically (every 60 iterations = ~1 minute)
+                cleanup_counter += 1
+                if cleanup_counter >= 60 and self.alert_manager:
+                    try:
+                        removed = self.alert_manager.cleanup_cache()
+                        if removed > 0:
+                            logger.debug(f"Cleaned up {removed} expired cache entries")
+                    except Exception as e:
+                        logger.warning(f"Error cleaning cache: {e}")
+                    cleanup_counter = 0
 
                 time.sleep(1)
 
@@ -259,4 +271,3 @@ class MonitorManager:
             "event_handler": self.event_handler.get_stats() if self.event_handler else {},
             "alert_manager": self.alert_manager.get_stats() if self.alert_manager else {},
         }
-

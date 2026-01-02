@@ -9,10 +9,8 @@ from __future__ import annotations
 
 import os
 import re
-import struct
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from src.config.logging_config import get_logger
@@ -380,7 +378,7 @@ class UserMonitor(BaseMonitor):
                 continue
 
             try:
-                with open(utmp_path, "rb") as f:
+                with open(utmp_path, "rb"):
                     # utmp struct size varies by system
                     # This is a simplified parser
                     pass
@@ -438,6 +436,5 @@ class UserMonitor(BaseMonitor):
             logger.debug(f"Failed to get login history: {e}")
 
         return events[:limit]
-
 
 

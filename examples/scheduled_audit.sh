@@ -4,14 +4,14 @@
 #
 # This script demonstrates how to run security audits on a schedule.
 # Add to cron for regular execution:
-#   0 2 * * * /opt/linux-security-monitor/examples/scheduled_audit.sh
+#   0 2 * * * /opt/Sentinel_Linux/examples/scheduled_audit.sh
 #
 
 set -euo pipefail
 
 # Configuration
-INSTALL_DIR="${LSM_INSTALL_DIR:-/opt/linux-security-monitor}"
-OUTPUT_DIR="${LSM_OUTPUT_DIR:-/var/log/linux-security-monitor/audits}"
+INSTALL_DIR="${LSM_INSTALL_DIR:-/opt/Sentinel_Linux}"
+OUTPUT_DIR="${LSM_OUTPUT_DIR:-/var/log/Sentinel_Linux/audits}"
 RETENTION_DAYS="${LSM_RETENTION_DAYS:-30}"
 
 # Ensure output directory exists

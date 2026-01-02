@@ -8,7 +8,46 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/lib/common.sh"
+
+# Common functions
+command_exists() {
+    command -v "$1" &>/dev/null
+}
+
+get_hostname() {
+    hostname 2>/dev/null || echo "unknown"
+}
+
+get_timestamp() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
+log_section() {
+    echo ""
+    echo "=== $1 ==="
+}
+
+log_subsection() {
+    echo ""
+    echo "--- $1 ---"
+}
+
+log_result() {
+    local name="$1"
+    local status="$2"
+    local message="$3"
+    case "$status" in
+        OK)   echo "[OK]   $name: $message" ;;
+        WARN) echo "[WARN] $name: $message" ;;
+        FAIL) echo "[FAIL] $name: $message" ;;
+        INFO) echo "[INFO] $name: $message" ;;
+        *)    echo "[$status] $name: $message" ;;
+    esac
+}
+
+log_error() {
+    echo "[ERROR] $1" >&2
+}
 
 SHOW_LISTENING=false
 SHOW_ESTABLISHED=false

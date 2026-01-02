@@ -8,7 +8,7 @@ rule Reverse_Shell_Bash
     meta:
         description = "Detects bash reverse shell patterns"
         severity = "critical"
-        author = "Security Team"
+        author = "Ricardo Solís"
         date = "2024-01-01"
         mitre_attack = "T1059.004"
 
@@ -28,7 +28,7 @@ rule Reverse_Shell_Netcat
     meta:
         description = "Detects netcat reverse shell patterns"
         severity = "critical"
-        author = "Security Team"
+        author = "Ricardo Solís"
         date = "2024-01-01"
         mitre_attack = "T1059"
 
@@ -48,7 +48,7 @@ rule Reverse_Shell_Python
     meta:
         description = "Detects Python reverse shell patterns"
         severity = "critical"
-        author = "Security Team"
+        author = "Ricardo Solís"
         date = "2024-01-01"
         mitre_attack = "T1059.006"
 
@@ -68,7 +68,7 @@ rule Encoded_Command
     meta:
         description = "Detects base64 encoded command execution"
         severity = "high"
-        author = "Security Team"
+        author = "Ricardo Solís"
         date = "2024-01-01"
         mitre_attack = "T1027"
 
@@ -89,7 +89,7 @@ rule Persistence_Cron
     meta:
         description = "Detects potential cron-based persistence"
         severity = "medium"
-        author = "Security Team"
+        author = "Ricardo Solís"
         date = "2024-01-01"
         mitre_attack = "T1053.003"
 
@@ -109,7 +109,7 @@ rule Credential_Access_Shadow
     meta:
         description = "Detects attempts to access shadow file"
         severity = "critical"
-        author = "Security Team"
+        author = "Ricardo Solís"
         date = "2024-01-01"
         mitre_attack = "T1003.008"
 
@@ -128,7 +128,7 @@ rule Suspicious_Download_Execute
     meta:
         description = "Detects download and execute patterns"
         severity = "high"
-        author = "Security Team"
+        author = "Ricardo Solís"
         date = "2024-01-01"
         mitre_attack = "T1105"
 
@@ -148,7 +148,7 @@ rule SSH_Key_Theft
     meta:
         description = "Detects SSH key access patterns"
         severity = "high"
-        author = "Security Team"
+        author = "Ricardo Solís"
         date = "2024-01-01"
         mitre_attack = "T1552.004"
 

@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -34,7 +33,7 @@ class JSONReporter:
         config = config or {}
         self.output_path = config.get(
             "output_path",
-            "/var/log/linux-security-monitor/events.json"
+            "/var/log/Sentinel_Linux/events.json"
         )
         self.rotate = config.get("rotate", True)
         self.max_size_mb = config.get("max_size_mb", 100)
@@ -76,7 +75,7 @@ class JSONReporter:
 
             with open(self.output_path, "a", encoding="utf-8") as f:
                 for alert_dict in self._buffer:
-                    f.write(json.dumps(alert_dict) + "\n")
+                    f.write(json.dumps(alert_dict, ensure_ascii=False) + "\n")
 
             self._buffer.clear()
 
@@ -120,6 +119,5 @@ class JSONReporter:
     def __del__(self) -> None:
         """Flush buffer on cleanup."""
         self.flush()
-
 
 

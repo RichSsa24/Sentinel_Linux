@@ -14,11 +14,11 @@
 set -euo pipefail
 
 # Configuration
-INSTALL_DIR="/opt/linux-security-monitor"
-CONFIG_DIR="/etc/linux-security-monitor"
-LOG_DIR="/var/log/linux-security-monitor"
-DATA_DIR="/var/lib/linux-security-monitor"
-SERVICE_NAME="linux-security-monitor"
+INSTALL_DIR="/opt/Sentinel_Linux"
+CONFIG_DIR="/etc/Sentinel_Linux"
+LOG_DIR="/var/log/Sentinel_Linux"
+DATA_DIR="/var/lib/Sentinel_Linux"
+SERVICE_NAME="Sentinel_Linux"
 SERVICE_USER="security-monitor"
 
 # Options
@@ -150,7 +150,7 @@ remove_data() {
     fi
 
     # Remove PID file
-    rm -f /var/run/linux-security-monitor.pid
+    rm -f /var/run/Sentinel_Linux.pid
 }
 
 remove_user() {
@@ -170,7 +170,7 @@ cleanup_symlinks() {
     log_info "Cleaning up symlinks..."
 
     # Remove any symlinks in /usr/local/bin
-    local symlinks=("/usr/local/bin/lsm" "/usr/local/bin/linux-security-monitor" "/usr/local/bin/sentinel")
+    local symlinks=("/usr/local/bin/lsm" "/usr/local/bin/Sentinel_Linux" "/usr/local/bin/sentinel")
     for link in "${symlinks[@]}"; do
         if [[ -L "$link" ]]; then
             rm -f "$link"

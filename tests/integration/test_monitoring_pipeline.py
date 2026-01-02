@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List
 
 import pytest
 
@@ -12,7 +11,6 @@ from src.core.event_handler import EventHandler, ProcessedEvent
 from src.core.alert_manager import AlertManager
 from src.analyzers.threat_analyzer import ThreatAnalyzer
 from src.analyzers.mitre_mapper import MITREMapper
-from src.reporters.console_reporter import ConsoleReporter
 
 
 @pytest.fixture
@@ -133,6 +131,5 @@ class TestMonitoringPipeline:
 
         assert len(correlations) > 0
         assert any(c["type"] == "user_activity" for c in correlations)
-
 
 

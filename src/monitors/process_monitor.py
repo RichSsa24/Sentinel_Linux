@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 import psutil
@@ -24,7 +23,6 @@ from src.core.base_monitor import (
     EventType,
     Severity,
 )
-from src.core.exceptions import CollectionError
 
 
 logger = get_logger(__name__)
@@ -83,10 +81,10 @@ class ProcessMonitor(BaseMonitor):
 
     # Suspicious paths where legitimate binaries shouldn't execute from
     DEFAULT_SUSPICIOUS_PATHS = [
-        "/tmp",
-        "/var/tmp",
-        "/dev/shm",
-        "/run/shm",
+        "/tmp",  # nosec B108
+        "/var/tmp",  # nosec B108
+        "/dev/shm",  # nosec B108
+        "/run/shm",  # nosec B108
         "/home",  # User home directories
     ]
 
@@ -200,7 +198,8 @@ class ProcessMonitor(BaseMonitor):
     def _safe_get(self, func: Any) -> Optional[str]:
         """Safely call a process method that might fail."""
         try:
-            return func()
+            result = func()
+            return str(result) if result is not None else None
         except (psutil.AccessDenied, psutil.NoSuchProcess, FileNotFoundError):
             return None
 
@@ -354,8 +353,12 @@ class ProcessMonitor(BaseMonitor):
         """Load process baseline from file."""
         import json
 
+        baseline_path = self.baseline_path
+        if not baseline_path:
+            return
+
         try:
-            with open(self.baseline_path, "r") as f:
+            with open(baseline_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 self._baseline = ProcessBaseline(
                     processes=data.get("processes", {}),
@@ -393,7 +396,7 @@ class ProcessMonitor(BaseMonitor):
             if not proc_info:
                 return {"error": "Process not found or access denied"}
 
-            analysis = {
+            analysis: Dict[str, Any] = {
                 "process_info": proc_info.to_dict(),
                 "risk_indicators": [],
                 "risk_score": 0.0,
@@ -444,6 +447,5 @@ class ProcessMonitor(BaseMonitor):
             return {"error": f"Process {pid} not found"}
         except psutil.AccessDenied:
             return {"error": f"Access denied to process {pid}"}
-
 
 
