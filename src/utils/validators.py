@@ -152,7 +152,7 @@ def validate_config(
     if schema:
         errors.extend(_validate_against_schema(config, schema))
 
-    return len(errors) == 0, errors
+    return not errors, errors
 
 
 def _validate_against_schema(

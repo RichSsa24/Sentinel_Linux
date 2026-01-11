@@ -34,8 +34,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/linux-security-monitor.git
-cd linux-security-monitor
+git clone https://github.com/RichSsa24/Sentinel_Linux.git
+cd Sentinel_Linux
 
 # Run the installation script
 chmod +x scripts/bash/install.sh
@@ -54,8 +54,8 @@ The install script will:
 #### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/RichSsa24/linux-security-monitor.git
-cd linux-security-monitor
+git clone https://github.com/RichSsa24/Sentinel_Linux.git
+cd Sentinel_Linux
 ```
 
 #### Step 2: Create Virtual Environment
@@ -91,42 +91,42 @@ pip install -e ".[yara]"
 
 ```bash
 # Create configuration directory
-sudo mkdir -p /etc/linux-security-monitor
+sudo mkdir -p /etc/Sentinel_Linux
 
 # Copy default configuration
-sudo cp src/config/default_config.yaml /etc/linux-security-monitor/config.yaml
+sudo cp src/config/default_config.yaml /etc/Sentinel_Linux/config.yaml
 
 # Set permissions
-sudo chmod 750 /etc/linux-security-monitor
-sudo chmod 640 /etc/linux-security-monitor/config.yaml
+sudo chmod 750 /etc/Sentinel_Linux
+sudo chmod 640 /etc/Sentinel_Linux/config.yaml
 ```
 
 #### Step 5: Create Log Directory
 
 ```bash
 # Create log directory
-sudo mkdir -p /var/log/linux-security-monitor
+sudo mkdir -p /var/log/Sentinel_Linux
 
 # Set permissions
-sudo chmod 750 /var/log/linux-security-monitor
+sudo chmod 750 /var/log/Sentinel_Linux
 ```
 
 #### Step 6: Create Data Directory
 
 ```bash
 # Create data directories
-sudo mkdir -p /var/lib/linux-security-monitor/{baselines,cache}
+sudo mkdir -p /var/lib/Sentinel_Linux/{baselines,cache}
 
 # Set permissions
-sudo chmod 750 /var/lib/linux-security-monitor
+sudo chmod 750 /var/lib/Sentinel_Linux
 ```
 
 ### Method 3: Development Installation
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/linux-security-monitor.git
-cd linux-security-monitor
+git clone https://github.com/RichSsa24/Sentinel_Linux.git
+cd Sentinel_Linux
 
 # Create virtual environment
 python3 -m venv venv
@@ -146,7 +146,7 @@ pytest tests/ -v
 
 ### Basic Configuration
 
-Edit `/etc/linux-security-monitor/config.yaml`:
+Edit `/etc/Sentinel_Linux/config.yaml`:
 
 ```yaml
 # Monitoring configuration
@@ -201,8 +201,8 @@ reporters:
 sudo useradd -r -s /sbin/nologin -d /var/lib/linux-security-monitor security-monitor
 
 # Set ownership
-sudo chown -R security-monitor:security-monitor /var/lib/linux-security-monitor
-sudo chown -R security-monitor:security-monitor /var/log/linux-security-monitor
+sudo chown -R security-monitor:security-monitor /var/lib/Sentinel_Linux
+sudo chown -R security-monitor:security-monitor /var/log/Sentinel_Linux
 
 # Add to required groups for log access
 sudo usermod -aG adm security-monitor
@@ -210,32 +210,32 @@ sudo usermod -aG adm security-monitor
 
 ### Systemd Service Setup
 
-Create `/etc/systemd/system/linux-security-monitor.service`:
+Create `/etc/systemd/system/Sentinel_Linux.service`:
 
 ```ini
 [Unit]
-Description=Linux Security Monitor
-Documentation=https://github.com/yourusername/linux-security-monitor
+Description=Sentinel Linux Security Monitor
+Documentation=https://github.com/RichSsa24/Sentinel_Linux
 After=network.target syslog.target
 
 [Service]
 Type=simple
 User=root
 Group=root
-ExecStart=/opt/linux-security-monitor/venv/bin/python /opt/linux-security-monitor/scripts/python/run_monitor.py
+ExecStart=/opt/Sentinel_Linux/venv/bin/python -m src.cli.main run
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=linux-security-monitor
+SyslogIdentifier=Sentinel_Linux
 
 # Security hardening
 NoNewPrivileges=no
 ProtectSystem=strict
 ProtectHome=read-only
 PrivateTmp=true
-ReadWritePaths=/var/log/linux-security-monitor /var/lib/linux-security-monitor
+ReadWritePaths=/var/log/Sentinel_Linux /var/lib/Sentinel_Linux
 
 [Install]
 WantedBy=multi-user.target
@@ -245,9 +245,22 @@ Enable and start the service:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable linux-security-monitor
-sudo systemctl start linux-security-monitor
-sudo systemctl status linux-security-monitor
+sudo systemctl enable Sentinel_Linux
+sudo systemctl start Sentinel_Linux
+sudo systemctl status Sentinel_Linux
+```
+
+**Alternative: Using the control script**
+
+```bash
+# Start the monitor
+sudo ./scripts/bash/run_monitor.sh start
+
+# Check status
+sudo ./scripts/bash/run_monitor.sh status
+
+# Stop the monitor
+sudo ./scripts/bash/run_monitor.sh stop
 ```
 
 ## Verification
@@ -259,20 +272,17 @@ sudo systemctl status linux-security-monitor
 python3 --version
 
 # Check package installation
-pip show linux-security-monitor
-
-# Run self-test
-python -m src.core.selftest
+pip show Sentinel_Linux
 
 # Test configuration
-python scripts/python/run_monitor.py --config-test
+python -m src.cli.main config validate
 ```
 
 ### Run Quick Test
 
 ```bash
 # Run with verbose output
-sudo python scripts/python/run_monitor.py --verbose --dry-run
+sudo python -m src.cli.main run --log-level DEBUG --dry-run
 
 # Run system audit script
 sudo ./scripts/bash/system_audit.sh
@@ -282,10 +292,10 @@ sudo ./scripts/bash/system_audit.sh
 
 ```bash
 # Check service logs
-sudo journalctl -u linux-security-monitor -f
+sudo journalctl -u Sentinel_Linux -f
 
 # Check application logs
-sudo tail -f /var/log/linux-security-monitor/monitor.log
+sudo tail -f /var/log/Sentinel_Linux/monitor.log
 ```
 
 ## Troubleshooting
@@ -296,7 +306,7 @@ sudo tail -f /var/log/linux-security-monitor/monitor.log
 
 ```bash
 # Check if running with sufficient privileges
-sudo python scripts/python/run_monitor.py
+sudo python -m src.cli.main run
 
 # Or grant specific capabilities
 sudo setcap cap_net_admin,cap_sys_ptrace+ep $(which python3)
@@ -316,29 +326,32 @@ sudo dnf install python3-devel libffi-devel
 
 ```bash
 # Validate configuration
-python scripts/python/run_monitor.py --validate-config
+python -m src.cli.main config validate
 
 # Check YAML syntax
-python -c "import yaml; yaml.safe_load(open('/etc/linux-security-monitor/config.yaml'))"
+python -c "import yaml; yaml.safe_load(open('/etc/Sentinel_Linux/config.yaml'))"
 ```
 
 #### Service Won't Start
 
 ```bash
 # Check service status
-sudo systemctl status linux-security-monitor
+sudo systemctl status Sentinel_Linux
 
 # Check for errors in journal
-sudo journalctl -u linux-security-monitor --no-pager -n 50
+sudo journalctl -u Sentinel_Linux --no-pager -n 50
 
 # Test manually
-sudo /opt/linux-security-monitor/venv/bin/python /opt/linux-security-monitor/scripts/python/run_monitor.py
+sudo /opt/Sentinel_Linux/venv/bin/python -m src.cli.main run
+
+# Or use the control script
+sudo ./scripts/bash/run_monitor.sh foreground
 ```
 
 ### Getting Help
 
-1. Check the [FAQ](FAQ.md)
-2. Search existing [GitHub Issues](https://github.com/yourusername/linux-security-monitor/issues)
+1. Check the [Usage Guide](USAGE.md)
+2. Search existing [GitHub Issues](https://github.com/RichSsa24/Sentinel_Linux/issues)
 3. Open a new issue with:
    - System information (`uname -a`, `python3 --version`)
    - Installation method used
@@ -354,18 +367,18 @@ sudo /opt/linux-security-monitor/venv/bin/python /opt/linux-security-monitor/scr
 deactivate
 
 # Stop and disable service
-sudo systemctl stop linux-security-monitor
-sudo systemctl disable linux-security-monitor
+sudo systemctl stop Sentinel_Linux
+sudo systemctl disable Sentinel_Linux
 
 # Remove service file
-sudo rm /etc/systemd/system/linux-security-monitor.service
+sudo rm /etc/systemd/system/Sentinel_Linux.service
 sudo systemctl daemon-reload
 
 # Remove directories
-sudo rm -rf /opt/linux-security-monitor
-sudo rm -rf /etc/linux-security-monitor
-sudo rm -rf /var/log/linux-security-monitor
-sudo rm -rf /var/lib/linux-security-monitor
+sudo rm -rf /opt/Sentinel_Linux
+sudo rm -rf /etc/Sentinel_Linux
+sudo rm -rf /var/log/Sentinel_Linux
+sudo rm -rf /var/lib/Sentinel_Linux
 
 # Remove service account
 sudo userdel security-monitor
@@ -377,13 +390,13 @@ sudo userdel security-monitor
 
 ```bash
 # Stop service
-sudo systemctl stop linux-security-monitor
+sudo systemctl stop Sentinel_Linux
 
 # Backup configuration
-sudo cp /etc/linux-security-monitor/config.yaml /etc/linux-security-monitor/config.yaml.bak
+sudo cp /etc/Sentinel_Linux/config.yaml /etc/Sentinel_Linux/config.yaml.bak
 
 # Update repository
-cd /opt/linux-security-monitor
+cd /opt/Sentinel_Linux
 git pull origin main
 
 # Update dependencies
@@ -391,10 +404,10 @@ source venv/bin/activate
 pip install -e . --upgrade
 
 # Check for configuration changes
-diff src/config/default_config.yaml /etc/linux-security-monitor/config.yaml
+diff src/config/default_config.yaml /etc/Sentinel_Linux/config.yaml
 
 # Restart service
-sudo systemctl start linux-security-monitor
+sudo systemctl start Sentinel_Linux
 ```
 
 ## Security Considerations

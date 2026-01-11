@@ -352,7 +352,12 @@ main() {
 
     # Create temp file with recent logs
     local temp_log
-    temp_log=$(mktemp)
+    temp_log=$(mktemp) || {
+        log_error "Failed to create temporary file"
+        exit 1
+    }
+    # Ensure cleanup on exit
+    trap "rm -f '${temp_log}'" EXIT INT TERM
     trap "rm -f $temp_log" EXIT
 
     get_recent_logs "$LOG_FILE" "$TIME_HOURS" > "$temp_log"

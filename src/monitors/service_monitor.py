@@ -402,7 +402,7 @@ class ServiceMonitor(BaseMonitor):
                     "healthy": False,
                 }
 
-        results["healthy"] = len(results["issues"]) == 0
+        results["healthy"] = not results["issues"]
         return results
 
 

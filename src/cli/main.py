@@ -457,6 +457,33 @@ def status(ctx: click.Context) -> None:
         click.echo("Config: Not found")
 
 
+@cli.command()
+@click.option("-c", "--config", type=click.Path(exists=True), help="Configuration file path")
+@click.option("--refresh", type=float, default=1.0, help="Refresh interval in seconds")
+@click.pass_context
+def dashboard(ctx: click.Context, config: Optional[str], refresh: float) -> None:
+    """Launch interactive monitoring dashboard."""
+    try:
+        from src.cli.dashboard import Dashboard
+
+        config_path = config or ctx.obj.get("config_path")
+        dashboard_instance = Dashboard(config_path=config_path, refresh_interval=refresh)
+        dashboard_instance.run()
+    except ImportError as e:
+        click.echo(
+            click.style(
+                f"Error: Dashboard requires 'rich' library. Install with: pip install rich",
+                fg="red",
+            ),
+            err=True,
+        )
+        ctx.exit(1)
+    except Exception as e:
+        logger.error(f"Dashboard error: {e}", exc_info=True)
+        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
+        ctx.exit(1)
+
+
 def main() -> int:
     """Main entry point."""
     try:

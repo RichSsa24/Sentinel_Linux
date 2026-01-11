@@ -22,6 +22,8 @@ from src.core.base_monitor import (
     EventType,
     Severity,
 )
+from src.core.exceptions import ValidationError
+from src.utils.validators import validate_path
 
 
 logger = get_logger(__name__)
@@ -164,6 +166,13 @@ class FileIntegrityMonitor(BaseMonitor):
 
         # Process individual files
         for path in self.watched_paths:
+            try:
+                # Validate path to prevent path traversal
+                validate_path(path, must_exist=False)
+            except ValidationError as e:
+                logger.warning(f"Invalid path in configuration (skipping): {path} - {e}")
+                continue
+
             if os.path.isfile(path):
                 info = self._get_file_info(path)
                 if info:
@@ -175,6 +184,13 @@ class FileIntegrityMonitor(BaseMonitor):
 
         # Process recursive directories
         for path in self.recursive_paths:
+            try:
+                # Validate path to prevent path traversal
+                validate_path(path, must_exist=False)
+            except ValidationError as e:
+                logger.warning(f"Invalid recursive path in configuration (skipping): {path} - {e}")
+                continue
+
             if os.path.isdir(path):
                 for file_info in self._scan_directory(path, recursive=True):
                     baseline[file_info.path] = file_info

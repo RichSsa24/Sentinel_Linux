@@ -324,7 +324,17 @@ class Settings(BaseSettings):
         Raises:
             FileNotFoundError: If configuration file doesn't exist.
             ValueError: If configuration is invalid.
+            ValidationError: If path is invalid (path traversal attempt).
         """
+        # Validate path to prevent path traversal
+        from src.core.exceptions import ValidationError as PathValidationError
+        from src.utils.validators import validate_path
+
+        try:
+            validate_path(path, must_exist=True, must_be_file=True)
+        except PathValidationError as e:
+            raise ValueError(f"Invalid configuration file path: {e}") from e
+
         config_path = Path(path)
         if not config_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {path}")

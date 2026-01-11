@@ -19,7 +19,8 @@ from src.core.base_monitor import (
     EventType,
     Severity,
 )
-from src.core.exceptions import CollectionError
+from src.core.exceptions import CollectionError, ValidationError
+from src.utils.validators import validate_path
 
 
 logger = get_logger(__name__)
@@ -103,15 +104,23 @@ class LogMonitor(BaseMonitor):
 
     def _initialize(self) -> None:
         """Initialize the monitor."""
+        valid_paths = []
         for path in self.log_paths:
-            if os.path.exists(path):
-                try:
-                    stat = os.stat(path)
-                    self._file_positions[path] = stat.st_size
-                    self._file_inodes[path] = stat.st_ino
-                except OSError:
-                    pass
+            try:
+                # Validate path to prevent path traversal
+                validate_path(path, must_exist=False)
+                valid_paths.append(path)
+                if os.path.exists(path):
+                    try:
+                        stat = os.stat(path)
+                        self._file_positions[path] = stat.st_size
+                        self._file_inodes[path] = stat.st_ino
+                    except OSError:
+                        pass
+            except ValidationError as e:
+                logger.warning(f"Invalid log path in configuration (skipping): {path} - {e}")
 
+        self.log_paths = valid_paths
         logger.info(f"LogMonitor initialized, monitoring {len(self.log_paths)} files")
 
     def _cleanup(self) -> None:
@@ -123,6 +132,13 @@ class LogMonitor(BaseMonitor):
         events: List[Event] = []
 
         for log_path in self.log_paths:
+            try:
+                # Validate path before accessing
+                validate_path(log_path, must_exist=False)
+            except ValidationError as e:
+                logger.warning(f"Invalid log path (skipping): {log_path} - {e}")
+                continue
+
             if not os.path.exists(log_path):
                 continue
 

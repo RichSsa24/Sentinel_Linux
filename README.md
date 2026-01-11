@@ -236,6 +236,40 @@ pip install -e .
 
 **What it does**: Starts security monitoring with default configuration.
 
+**Using the CLI (recommended)**:
+```bash
+# Run with default configuration
+sudo python -m src.cli.main run
+
+# With custom configuration
+sudo python -m src.cli.main run --config /path/to/config.yaml
+
+# Verbose mode (more debug information)
+sudo python -m src.cli.main run --log-level DEBUG
+
+# Dry run (doesn't send alerts, only shows what it would detect)
+sudo python -m src.cli.main run --dry-run
+```
+
+**Using the control script**:
+```bash
+# Start the monitor in background
+sudo ./scripts/bash/run_monitor.sh start
+
+# Stop the monitor
+sudo ./scripts/bash/run_monitor.sh stop
+
+# Restart the monitor
+sudo ./scripts/bash/run_monitor.sh restart
+
+# Check status
+sudo ./scripts/bash/run_monitor.sh status
+
+# Run in foreground (for debugging)
+sudo ./scripts/bash/run_monitor.sh foreground
+```
+
+**Using the Python script directly**:
 ```bash
 # Run with default configuration
 sudo python scripts/python/run_monitor.py
@@ -249,6 +283,32 @@ sudo python scripts/python/run_monitor.py --verbose
 # Dry run (doesn't send alerts, only shows what it would detect)
 sudo python scripts/python/run_monitor.py --dry-run
 ```
+
+#### Interactive Dashboard
+
+**For**: SOC analysts and administrators who want real-time monitoring visualization.
+
+**What it does**: Provides an interactive, real-time terminal dashboard showing system statistics, recent events, alerts, and monitor status.
+
+```bash
+# Launch dashboard with default settings
+sudo python -m src.cli.main dashboard
+
+# With custom configuration
+sudo python -m src.cli.main dashboard --config /path/to/config.yaml
+
+# Custom refresh interval (default: 1.0 seconds)
+sudo python -m src.cli.main dashboard --refresh 2.0
+```
+
+**Dashboard features**:
+- Real-time system information (hostname, OS, kernel, uptime, CPU, memory)
+- Monitor status and statistics (active monitors, events processed, alerts generated)
+- Recent events table with severity color coding
+- Recent alerts with severity indicators
+- Disk usage information
+- Auto-refresh with configurable interval
+- Keyboard interrupt handling (Ctrl+C to exit)
 
 #### Running Audits
 

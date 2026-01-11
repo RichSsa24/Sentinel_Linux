@@ -140,6 +140,16 @@ class IOCMatcher:
         count = 0
 
         try:
+            # Validate path to prevent path traversal
+            from src.core.exceptions import ValidationError
+            from src.utils.validators import validate_path
+
+            validate_path(path, must_exist=True, must_be_file=True)
+        except ValidationError as e:
+            logger.error(f"Invalid IOC file path: {path} - {e}")
+            return 0
+
+        try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
