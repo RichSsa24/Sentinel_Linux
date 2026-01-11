@@ -172,15 +172,50 @@ create_lock() {
 
 # Find Python executable
 find_python_executable() {
-    local venv_python="${SCRIPT_DIR}/venv/bin/python"
+    # Get absolute path of script directory (works even with sudo)
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+    
+    # Try venv in scripts directory first (most common location)
+    local scripts_venv_python="${script_dir}/scripts/venv/bin/python"
+    
+    # Try venv in root directory
+    local venv_python="${script_dir}/venv/bin/python"
+    
+    # Try venv from current environment (if activated)
+    # Note: VIRTUAL_ENV may not be preserved with sudo, so we check the file directly
+    local env_python=""
+    if [[ -n "${VIRTUAL_ENV:-}" ]]; then
+        env_python="${VIRTUAL_ENV}/bin/python"
+    fi
+    
     local system_python
     
+    # Check scripts/venv first (most common location)
+    if [[ -f "${scripts_venv_python}" ]] && [[ -x "${scripts_venv_python}" ]]; then
+        log_debug "Found venv at: ${scripts_venv_python}"
+        echo "${scripts_venv_python}"
+        return 0
+    fi
+    
+    # Check root venv
     if [[ -f "${venv_python}" ]] && [[ -x "${venv_python}" ]]; then
+        log_debug "Found venv at: ${venv_python}"
         echo "${venv_python}"
         return 0
     fi
+    
+    # Check activated venv (if VIRTUAL_ENV is set)
+    if [[ -n "${env_python}" ]] && [[ -f "${env_python}" ]] && [[ -x "${env_python}" ]]; then
+        log_debug "Found venv from VIRTUAL_ENV: ${env_python}"
+        echo "${env_python}"
+        return 0
+    fi
 
+    # Fallback to system python
     system_python=$(command -v python3) || die "python3 not found in PATH"
+    log_warn "Using system Python: ${system_python} (venv not found)"
+    log_warn "This may cause import errors. Install dependencies with: pip install -e ."
     echo "${system_python}"
 }
 
@@ -188,6 +223,17 @@ find_python_executable() {
 start_foreground() {
     local python_exec
     python_exec=$(find_python_executable)
+    
+    # Log which Python is being used for debugging
+    log_info "Using Python: ${python_exec}"
+    log_debug "Python version: $("${python_exec}" --version 2>&1 || echo 'unknown')"
+    
+    # Verify pydantic_settings is available
+    if ! "${python_exec}" -c "import pydantic_settings" 2>/dev/null; then
+        log_error "pydantic_settings not found in ${python_exec}"
+        log_error "Please install dependencies: pip install -e ."
+        die "Missing required dependency: pydantic_settings"
+    fi
     
     log_info "Starting Linux Security Monitor (foreground mode)..."
     log_info "Configuration: ${CONFIG_FILE}"

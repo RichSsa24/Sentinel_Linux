@@ -243,8 +243,8 @@ class ReportersConfig(BaseModel):
     """Configuration for all reporters."""
 
     console: ConsoleReporterConfig = Field(default_factory=ConsoleReporterConfig)
-    json: JSONReporterConfig = Field(
-        default_factory=JSONReporterConfig, alias="json_reporter"
+    json_reporter: JSONReporterConfig = Field(
+        default_factory=JSONReporterConfig, alias="json"
     )
     syslog: SyslogReporterConfig = Field(default_factory=SyslogReporterConfig)
     webhook: WebhookReporterConfig = Field(default_factory=WebhookReporterConfig)
